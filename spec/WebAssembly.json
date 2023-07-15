@@ -1,0 +1,1287 @@
+{
+    "PrimitiveTypes": {
+        "byte_t": {
+            "Size (in bytes)": "1",
+            "Desc": "unsigned; value limited to 8 bits"
+        },
+        "uint32_t": {
+            "Size (in bytes)": "4",
+            "Desc": "unsigned; value limited to 32 bits"
+        },
+        "varuint1_t": {
+            "Size (in bytes)": "1",
+            "Desc": "unsigned LEB128 ; value limited to 1 bit"
+        },
+        "varuint7_t": {
+            "Size (in bytes)": "1",
+            "Desc": "unsigned LEB128 ; value limited to 7 bits"
+        },
+        "varuint32_t": {
+            "Size (in bytes)": "1-5",
+            "Desc": "unsigned LEB128 ; value limited to 32 bits"
+        },
+        "varuint64_t": {
+            "Size (in bytes)": "1-10",
+            "Desc": "unsigned LEB128 ; value limited to 64 bits"
+        },
+        "varsint7_t": {
+            "Size (in bytes)": "1",
+            "Desc": "signed LEB128 ; value limited to 7 bits"
+        },
+        "varsint32_t": {
+            "Size (in bytes)": "1-5",
+            "Desc": "signed LEB128 ; value limited to 32 bits"
+        },
+        "varsint64_t": {
+            "Size (in bytes)": "1-10",
+            "Desc": "signed LEB128 ; value limited to 64 bits"
+        },
+        "float32_t": {
+            "Size (in bytes)": "4",
+            "Desc": "IEEE 754-2008 binary32"
+        },
+        "float64_t": {
+            "Size (in bytes)": "8",
+            "Desc": "IEEE 754-2008 binary64"
+        }
+    },
+    "EncodingTypes": {
+        "type_encoding_t": {
+            "Enum": {
+                "i32": "-0x01",
+                "i64": "-0x02",
+                "f32": "-0x03",
+                "f64": "-0x04",
+                "v128": "-0x05",
+                "funcref": "-0x10",
+                "externref": "-0x11",
+                "func": "-0x20",
+                "void": "-0x40"
+            },
+            "Alias": "varsint7_t",
+            "Desc": "a value indicating a particular language type"
+        },
+        "varuptr_t": {
+            "Alias": {
+                "Choice": ["varuint32_t", "varuint64_t"]
+            },
+            "Desc": "either varuint32 or varuint64 depending on whether the linear memory associated with the instruction using it is 32-bit or 64-bit"
+        },
+        "memflags_t": {
+            "Alias": "varuint32_t",
+            "Desc": "a varuint32 containing the following bit fields",
+            "BitFields": {
+                "align": {
+                    "Range": [0, 32],
+                    "Desc": "alignment in bytes, encoded as the log2 of the value"
+                }
+            }
+        },
+        "identifier_t": {
+            "Alias": ["byte_t"],
+            "Desc": "a byte array which is valid UTF-8"
+        }
+    },
+    "ComplexTypes": {
+        "[T]": {
+            "Fields": {
+                "size": {
+                    "Type": "varuint32_t",
+                    "Desc": "The number of elements in the array"
+                },
+                "elems": {
+                    "Type": "T",
+                    "Count": "size",
+                    "Desc": "The elements"
+                }
+            }
+        },
+        "instantiation_time_initializer_t": {
+            "Fields": {
+                "instruction": {
+                    "Type": "instruction_t",
+                    "Count": "*"
+                }
+            }
+        },
+        "table_description_t": {
+            "Fields": {
+                "element_type": {
+                    "Type": "reference_type_t",
+                    "Desc": "the element type of the table"
+                },
+                "resizable": {
+                    "Type": "resizable_limits_t",
+                    "Desc": "table flags and sizes in units of elements"
+                }
+            }
+        },
+        "function_signature_t": {
+            "Fields": {
+                "form": {
+                    "Type": "signature_type_t",
+                    "Desc": "the type of signature"
+                },
+                "*?": {
+                    "form=func": {
+                        "params": {
+                            "Type": ["value_type_t"],
+                            "Desc": "the parameters to the function"
+                        },
+                        "returns": {
+                            "Type": ["value_type_t"],
+                            "Desc": "the return types of the function"
+                        }
+                    }
+                }
+            }
+        },
+        "import_t": {
+            "Fields": {
+                "module_name": {
+                    "Type": "identifier_t",
+                    "Desc": "the name of the module to import from"
+                },
+                "export_name": {
+                    "Type": "identifier_t",
+                    "Desc": "the name of the export in that module"
+                },
+                "kind": {
+                    "Type": "external_kind_t",
+                    "Desc": "the kind of import"
+                },
+                "*?": {
+                    "kind=Function": {
+                        "sig_index": {
+                            "Type": "varuint32_t",
+                            "Desc": "signature index into the Type Section"
+                        }
+                    },
+                    "kind=Table": {
+                        "desc": {
+                            "Type": "table_description_t",
+                            "Desc": "a description of the table"
+                        }
+                    },
+                    "kind=Memory": {
+                        "desc": {
+                            "Type": "linear_memory_description_t",
+                            "Desc": "a description of the linear memory"
+                        }
+                    },
+                    "kind=Global": {
+                        "desc": {
+                            "Type": "global_description_t",
+                            "Desc": "a description of the global variable"
+                        }
+                    }
+                }
+            }
+        },
+        "function_declaration_t": {
+            "Fields": {
+                "sig_index": {
+                    "Type": "varuint32_t",
+                    "Desc": "signature index into the Type Section"
+                }
+            }
+        },
+        "global_declaration_t": {
+            "Fields": {
+                "desc": {
+                    "Type": "global_description_t",
+                    "Desc": "a description of the global variable"
+                },
+                "init": {
+                    "Type": "instantiation_time_initializer_t",
+                    "Desc": "the initial value of the global variable"
+                }
+            }
+        },
+        "export_t": {
+            "Fields": {
+                "name": {
+                    "Type": "identifier_t",
+                    "Desc": "field name"
+                },
+                "kind": {
+                    "Type": "external_kind_t",
+                    "Desc": "the kind of export"
+                },
+                "*?": {
+                    "kind=Function": {
+                        "index": {
+                            "Type": "varuint32_t",
+                            "Desc": "an index into the function space"
+                        }
+                    },
+                    "kind=Table": {
+                        "index": {
+                            "Type": "varuint32_t",
+                            "Desc": "an index into the table space"
+                        }
+                    },
+                    "kind=Memory": {
+                        "index": {
+                            "Type": "varuint32_t",
+                            "Desc": "an index into the linear-memory space"
+                        }
+                    },
+                    "kind=Global": {
+                        "index": {
+                            "Type": "varuint32_t",
+                            "Desc": "an index into the global space"
+                        }
+                    }
+                }
+            }
+        },
+        "table_initializer_t": {
+            "Fields": {
+                "flags": {
+                    "Type": "varuint32_t",
+                    "Desc": "bit-packed flags"
+                },
+                "*?": {
+                    "flags=0x00": {
+                        "offset": {
+                            "Type": "instantiation_time_initializer_t",
+                            "Desc": "the index of the element in table 0 to start at"
+                        },
+                        "elems": {
+                            "Type": ["varuint32_t"],
+                            "Desc": "indices into the function index space"
+                        }
+                    },
+                    "flags=0x01": {
+                        "elemkind": {
+                            "Type": "byte_t",
+                            "Desc": "the kind of table element"
+                        },
+                        "elems": {
+                            "Type": ["varuint32_t"],
+                            "Desc": "indices into the function index space"
+                        }
+                    },
+                    "flags=0x02": {
+                        "tableidx": {
+                            "Type": "varuint32_t",
+                            "Desc": "the index of the table to initializer"
+                        },
+                        "offset": {
+                            "Type": "instantiation_time_initializer_t",
+                            "Desc": "the index of the element in the table to start at"
+                        },
+                        "elemkind": {
+                            "Type": "byte_t",
+                            "Desc": "the kind of table element"
+                        },
+                        "elems": {
+                            "Type": ["varuint32_t"],
+                            "Desc": "indices into the function index space"
+                        }
+                    },
+                    "flags=0x03": {
+                        "elemkind": {
+                            "Type": "byte_t",
+                            "Desc": "the kind of table element"
+                        },
+                        "elems": {
+                            "Type": ["varuint32_t"],
+                            "Desc": "indices into the function index space"
+                        }
+                    },
+                    "flags=0x04": {
+                        "offset": {
+                            "Type": "instantiation_time_initializer_t",
+                            "Desc": "the index of the element in table 0 to start at"
+                        },
+                        "elems": {
+                            "Type": ["instantiation_time_initializer_t"],
+                            "Desc": "element values"
+                        }
+                    },
+                    "flags=0x05": {
+                        "elemtype": {
+                            "Type": "reference_type_t",
+                            "Desc": "the type of table element"
+                        },
+                        "elems": {
+                            "Type": ["instantiation_time_initializer_t"],
+                            "Desc": "element values"
+                        }
+                    },
+                    "flags=0x06": {
+                        "tableidx": {
+                            "Type": "varuint32_t",
+                            "Desc": "the index of the table to initializer"
+                        },
+                        "offset": {
+                            "Type": "instantiation_time_initializer_t",
+                            "Desc": "the index of the element in the table to start at"
+                        },
+                        "elemtype": {
+                            "Type": "reference_type_t",
+                            "Desc": "the type of table element"
+                        },
+                        "elems": {
+                            "Type": ["instantiation_time_initializer_t"],
+                            "Desc": "element values"
+                        }
+                    },
+                    "flags=0x07": {
+                        "elemtype": {
+                            "Type": "reference_type_t",
+                            "Desc": "the type of table element"
+                        },
+                        "elems": {
+                            "Type": ["instantiation_time_initializer_t"],
+                            "Desc": "element values"
+                        }
+                    }
+                }
+            }
+        },
+        "function_body_t": {
+            "Fields": {
+                "body_size": {
+                    "Type": "varuint32_t",
+                    "Desc": "the size of locals and instructions , in bytes"
+                },
+                "locals": {
+                    "Type": ["local_entry_t"],
+                    "Desc": "local variable declarations"
+                },
+                "instructions": {
+                    "Type": "instruction_t",
+                    "Desc": "the instructions",
+                    "Count": "*"
+                }
+            }
+        },
+        "local_entry_t": {
+            "Fields": {
+                "count": {
+                    "Type": "varuint32_t",
+                    "Desc": "number of local variables of the following type"
+                },
+                "type": {
+                    "Type": "value_type_t",
+                    "Desc": "type of the variables"
+                }
+            }
+        },
+        "data_initializer_t": {
+            "Fields": {
+                "flags": {
+                    "Type": "varuint32_t",
+                    "Desc": "bit-packed flags"
+                },
+                "*?": {
+                    "flags=0x00": {
+                        "offset": {
+                            "Type": "instantiation_time_initializer_t",
+                            "Desc": "the index of the byte in memory 0 to start at"
+                        },
+                        "data": {
+                            "Type": ["byte_t"],
+                            "Desc": "byte data"
+                        }
+                    },
+                    "flags=0x01": {
+                        "data": {
+                            "Type": ["byte_t"],
+                            "Desc": "byte data"
+                        }
+                    },
+                    "flags=0x02": {
+                        "memidx": {
+                            "Type": "varuint32_t",
+                            "Desc": "the index in the memory space"
+                        },
+                        "offset": {
+                            "Type": "instantiation_time_initializer_t",
+                            "Desc": "the index of the byte in memory 0 to start at"
+                        },
+                        "data": {
+                            "Type": ["byte_t"],
+                            "Desc": "byte data"
+                        }
+                    }
+                }
+            }
+        },
+        "resizable_limits_t": {
+            "Fields": {
+                "flags": {
+                    "Type": "varuint32_t",
+                    "Desc": "bit-packed flags; see below"
+                },
+                "*?": {
+                    "flags=0x00": {
+                        "minimum": {
+                            "Type": "varuint32_t",
+                            "Desc": "minimum length (in units of table elements or pages )"
+                        }
+                    },
+                    "flags=0x01": {
+                        "minimum": {
+                            "Type": "varuint32_t",
+                            "Desc": "minimum length (in units of table elements or pages )"
+                        },
+                        "maximum": {
+                            "Type": "varuint32_t",
+                            "Desc": "maximum length (in same units as minimum )"
+                        }
+                    }
+                }
+            }
+        },
+        "linear_memory_description_t": {
+            "Fields": {
+                "limits": {
+                    "Type": "resizable_limits_t",
+                    "Desc": "linear-memory flags and sizes in units of pages"
+                }
+            }
+        },
+        "global_description_t": {
+            "Fields": {
+                "type": {
+                    "Type": "value_type_t",
+                    "Desc": "the type of the global variable"
+                },
+                "mutability": {
+                    "Type": "varuint1_t",
+                    "Desc": "0 if immutable, 1 if mutable"
+                }
+            }
+        },
+        "external_kind_t": {
+            "Alias": "varuint7_t",
+            "Desc": "Externals are entities which can either be defined within a module and exported , or imported from another module. They are encoded as a varuint7 and can be any one of the following values:",
+            "Enum": {
+                "Function": "0x00",
+                "Table": "0x01",
+                "Memory": "0x02",
+                "Global": "0x03"
+            }
+        }
+    },
+    "LanguageTypes": {
+        "reference_type_t": {
+            "Alias": "varsint7_t",
+            "Enum": [
+                {
+                    "Type": "type_encoding_t",
+                    "Value": "funcref"
+                },
+                {
+                    "Type": "type_encoding_t",
+                    "Value": "externref"
+                }
+            ]
+        },
+        "vector_value_type_t": {
+            "Alias": "varsint7_t",
+            "Enum": [
+                {
+                    "Type": "type_encoding_t",
+                    "Value": "v128"
+                }
+            ]
+        },
+        "block_signature_type_t": {
+            "Fields": {
+                "*?": {
+                    "true": {
+                        "type_value": {
+                            "Type": "varsint32_t",
+                            "Desc": "type index: negative a type_encoding_t enum value else a type section index"
+                        }
+                    },
+                    "false": {
+                        "type_index": {
+                            "Type": "varuint32_t"
+                        }
+                    }
+                }
+            }
+        },
+        "integer_value_type_t": {
+            "Alias": "varsint7_t",
+            "Enum": [
+                {
+                    "Type": "type_encoding_t",
+                    "Value": "i32"
+                },
+                {
+                    "Type": "type_encoding_t",
+                    "Value": "i64"
+                }
+            ]
+        },
+        "floating_point_value_type_t": {
+            "Alias": "varsint7_t",
+            "Enum": [
+                {
+                    "Type": "type_encoding_t",
+                    "Value": "f32"
+                },
+                {
+                    "Type": "type_encoding_t",
+                    "Value": "f64"
+                }
+            ]
+        },
+        "signature_type_t": {
+            "Alias": "varsint7_t",
+            "Enum": [
+                {
+                    "Type": "type_encoding_t",
+                    "Value": "func"
+                }
+            ]
+        },
+        "value_type_t": {
+            "Alias": "varsint7_t",
+            "Enum": [
+                {
+                    "Type": "integer_value_type_t",
+                    "Value": "*"
+                },
+                {
+                    "Type": "floating_point_value_type_t",
+                    "Value": "*"
+                },
+                {
+                    "Type": "vector_value_type_t",
+                    "Value": "*"
+                },
+                {
+                    "Type": "reference_type_t",
+                    "Value": "*"
+                }
+            ]
+        }
+    },
+    "ExecutionTypes": {
+        "instruction_t": {
+            "0x00": [],
+            "0x01": [],
+            "0x02": [
+                ["signature", "block_signature_type_t"],
+                {"depth": 1}
+            ],
+            "0x03": [
+                ["signature", "block_signature_type_t"],
+                {"depth": 1}
+            ],
+            "0x04": [
+                ["signature", "block_signature_type_t"],
+                {
+                    "depth": 1,
+                    "stack_delta": -1
+                }
+            ],
+            "0x05": [
+                {
+                    "depth": null,
+                    "stack_delta": null
+                }
+            ],
+            "0x0b": [
+                {
+                    "depth": -1,
+                    "stack_delta": null
+                }
+            ],
+            "0x0c": [
+                ["depth", "varuint32_t"],
+                {"stack_delta": null}
+            ],
+            "0x0d": [
+                ["depth", "varuint32_t"],
+                {"stack_delta": null}
+            ],
+            "0x0e": [
+                ["table", "[varuint32_t]"],
+                ["default", "varuint32_t"],
+                {"stack_delta": null}
+            ],
+            "0x0f": [
+                {"stack_delta": null}
+            ],
+            "0x10": [
+                ["callee", "varuint32_t"],
+                {"stack_delta": null}
+            ],
+            "0x11": [
+                ["signature", "varuint32_t"],
+                ["tableidx", "varuint32_t"],
+                {"stack_delta": null}
+            ],
+            "0x12": [
+                ["callee", "varuint32_t"],
+                {"stack_delta": null}
+            ],
+            "0x1C": [
+                [
+                    "valtypes",
+                    ["value_type_t"]
+                ],
+                {"stack_delta": -2}
+            ],
+            "0x1a": [
+                {"stack_delta": -1}
+            ],
+            "0x1b": [
+                {"stack_delta": -2}
+            ],
+            "0x20": [
+                ["id", "varuint32_t"],
+                {"stack_delta": 1}
+            ],
+            "0x21": [
+                ["id", "varuint32_t"],
+                {"stack_delta": -1}
+            ],
+            "0x22": [["id", "varuint32_t"]],
+            "0x23": [
+                ["id", "varuint32_t"],
+                {"stack_delta": 1}
+            ],
+            "0x24": [
+                ["id", "varuint32_t"],
+                {"stack_delta": -1}
+            ],
+            "0x25": [
+                ["tableidx", "varuint32_t"]
+            ],
+            "0x26": [
+                ["tableidx", "varuint32_t"],
+                {"stack_delta": -2}
+            ],
+            "0x28": [["flags", "memflags_t"], ["offset", "varuptr_t"]],
+            "0x29": [["flags", "memflags_t"], ["offset", "varuptr_t"]],
+            "0x2a": [["flags", "memflags_t"], ["offset", "varuptr_t"]],
+            "0x2b": [["flags", "memflags_t"], ["offset", "varuptr_t"]],
+            "0x2c": [["flags", "memflags_t"], ["offset", "varuptr_t"]],
+            "0x2d": [["flags", "memflags_t"], ["offset", "varuptr_t"]],
+            "0x2e": [["flags", "memflags_t"], ["offset", "varuptr_t"]],
+            "0x2f": [["flags", "memflags_t"], ["offset", "varuptr_t"]],
+            "0x30": [["flags", "memflags_t"], ["offset", "varuptr_t"]],
+            "0x31": [["flags", "memflags_t"], ["offset", "varuptr_t"]],
+            "0x32": [["flags", "memflags_t"], ["offset", "varuptr_t"]],
+            "0x33": [["flags", "memflags_t"], ["offset", "varuptr_t"]],
+            "0x34": [["flags", "memflags_t"], ["offset", "varuptr_t"]],
+            "0x35": [["flags", "memflags_t"], ["offset", "varuptr_t"]],
+            "0x36": [
+                ["flags", "memflags_t"],
+                ["offset", "varuptr_t"],
+                {"stack_delta": -2}
+            ],
+            "0x37": [
+                ["flags", "memflags_t"],
+                ["offset", "varuptr_t"],
+                {"stack_delta": -2}
+            ],
+            "0x38": [
+                ["flags", "memflags_t"],
+                ["offset", "varuptr_t"],
+                {"stack_delta": -2}
+            ],
+            "0x39": [
+                ["flags", "memflags_t"],
+                ["offset", "varuptr_t"],
+                {"stack_delta": -2}
+            ],
+            "0x3a": [
+                ["flags", "memflags_t"],
+                ["offset", "varuptr_t"],
+                {"stack_delta": -2}
+            ],
+            "0x3b": [
+                ["flags", "memflags_t"],
+                ["offset", "varuptr_t"],
+                {"stack_delta": -2}
+            ],
+            "0x3c": [
+                ["flags", "memflags_t"],
+                ["offset", "varuptr_t"],
+                {"stack_delta": -2}
+            ],
+            "0x3d": [
+                ["flags", "memflags_t"],
+                ["offset", "varuptr_t"],
+                {"stack_delta": -2}
+            ],
+            "0x3e": [
+                ["flags", "memflags_t"],
+                ["offset", "varuptr_t"],
+                {"stack_delta": -2}
+            ],
+            "0x3f": [
+                ["reserved", "varuint1_t"],
+                {"stack_delta": 1}
+            ],
+            "0x40": [["reserved", "varuint1_t"]],
+            "0x41": [
+                ["value", "varsint32_t"],
+                {"stack_delta": 1}
+            ],
+            "0x42": [
+                ["value", "varsint64_t"],
+                {"stack_delta": 1}
+            ],
+            "0x43": [
+                ["value", "float32_t"],
+                {"stack_delta": 1}
+            ],
+            "0x44": [
+                ["value", "float64_t"],
+                {"stack_delta": 1}
+            ],
+            "0x45": [],
+            "0x46": [
+                {"stack_delta": -1}
+            ],
+            "0x47": [
+                {"stack_delta": -1}
+            ],
+            "0x48": [
+                {"stack_delta": -1}
+            ],
+            "0x49": [
+                {"stack_delta": -1}
+            ],
+            "0x4a": [
+                {"stack_delta": -1}
+            ],
+            "0x4b": [
+                {"stack_delta": -1}
+            ],
+            "0x4c": [
+                {"stack_delta": -1}
+            ],
+            "0x4d": [
+                {"stack_delta": -1}
+            ],
+            "0x4e": [
+                {"stack_delta": -1}
+            ],
+            "0x4f": [
+                {"stack_delta": -1}
+            ],
+            "0x50": [],
+            "0x51": [
+                {"stack_delta": -1}
+            ],
+            "0x52": [
+                {"stack_delta": -1}
+            ],
+            "0x53": [
+                {"stack_delta": -1}
+            ],
+            "0x54": [
+                {"stack_delta": -1}
+            ],
+            "0x55": [
+                {"stack_delta": -1}
+            ],
+            "0x56": [
+                {"stack_delta": -1}
+            ],
+            "0x57": [
+                {"stack_delta": -1}
+            ],
+            "0x58": [
+                {"stack_delta": -1}
+            ],
+            "0x59": [
+                {"stack_delta": -1}
+            ],
+            "0x5a": [
+                {"stack_delta": -1}
+            ],
+            "0x5b": [
+                {"stack_delta": -1}
+            ],
+            "0x5c": [
+                {"stack_delta": -1}
+            ],
+            "0x5d": [
+                {"stack_delta": -1}
+            ],
+            "0x5e": [
+                {"stack_delta": -1}
+            ],
+            "0x5f": [
+                {"stack_delta": -1}
+            ],
+            "0x60": [
+                {"stack_delta": -1}
+            ],
+            "0x61": [
+                {"stack_delta": -1}
+            ],
+            "0x62": [
+                {"stack_delta": -1}
+            ],
+            "0x63": [
+                {"stack_delta": -1}
+            ],
+            "0x64": [
+                {"stack_delta": -1}
+            ],
+            "0x65": [
+                {"stack_delta": -1}
+            ],
+            "0x66": [
+                {"stack_delta": -1}
+            ],
+            "0x67": [],
+            "0x68": [],
+            "0x69": [],
+            "0x6a": [
+                {"stack_delta": -1}
+            ],
+            "0x6b": [
+                {"stack_delta": -1}
+            ],
+            "0x6c": [
+                {"stack_delta": -1}
+            ],
+            "0x6d": [
+                {"stack_delta": -1}
+            ],
+            "0x6e": [
+                {"stack_delta": -1}
+            ],
+            "0x6f": [
+                {"stack_delta": -1}
+            ],
+            "0x70": [
+                {"stack_delta": -1}
+            ],
+            "0x71": [
+                {"stack_delta": -1}
+            ],
+            "0x72": [
+                {"stack_delta": -1}
+            ],
+            "0x73": [
+                {"stack_delta": -1}
+            ],
+            "0x74": [
+                {"stack_delta": -1}
+            ],
+            "0x75": [
+                {"stack_delta": -1}
+            ],
+            "0x76": [
+                {"stack_delta": -1}
+            ],
+            "0x77": [
+                {"stack_delta": -1}
+            ],
+            "0x78": [
+                {"stack_delta": -1}
+            ],
+            "0x79": [],
+            "0x7a": [],
+            "0x7b": [],
+            "0x7c": [
+                {"stack_delta": -1}
+            ],
+            "0x7d": [
+                {"stack_delta": -1}
+            ],
+            "0x7e": [
+                {"stack_delta": -1}
+            ],
+            "0x7f": [
+                {"stack_delta": -1}
+            ],
+            "0x80": [
+                {"stack_delta": -1}
+            ],
+            "0x81": [
+                {"stack_delta": -1}
+            ],
+            "0x82": [
+                {"stack_delta": -1}
+            ],
+            "0x83": [
+                {"stack_delta": -1}
+            ],
+            "0x84": [
+                {"stack_delta": -1}
+            ],
+            "0x85": [
+                {"stack_delta": -1}
+            ],
+            "0x86": [
+                {"stack_delta": -1}
+            ],
+            "0x87": [
+                {"stack_delta": -1}
+            ],
+            "0x88": [
+                {"stack_delta": -1}
+            ],
+            "0x89": [
+                {"stack_delta": -1}
+            ],
+            "0x8a": [
+                {"stack_delta": -1}
+            ],
+            "0x8b": [],
+            "0x8c": [],
+            "0x8d": [],
+            "0x8e": [],
+            "0x8f": [],
+            "0x90": [],
+            "0x91": [],
+            "0x92": [
+                {"stack_delta": -1}
+            ],
+            "0x93": [
+                {"stack_delta": -1}
+            ],
+            "0x94": [
+                {"stack_delta": -1}
+            ],
+            "0x95": [
+                {"stack_delta": -1}
+            ],
+            "0x96": [
+                {"stack_delta": -1}
+            ],
+            "0x97": [
+                {"stack_delta": -1}
+            ],
+            "0x98": [
+                {"stack_delta": -1}
+            ],
+            "0x99": [],
+            "0x9a": [],
+            "0x9b": [],
+            "0x9c": [],
+            "0x9d": [],
+            "0x9e": [],
+            "0x9f": [],
+            "0xD0": [
+                ["reftype", "reference_type_t"],
+                {"stack_delta": 1}
+            ],
+            "0xD1": [],
+            "0xD2": [
+                ["func", "varuint32_t"],
+                {"stack_delta": 1}
+            ],
+            "0xFC": {
+                "0x00": [],
+                "0x01": [],
+                "0x02": [],
+                "0x03": [],
+                "0x04": [],
+                "0x05": [],
+                "0x06": [],
+                "0x07": [],
+                "0x08": [
+                    ["x", "varuint32_t"],
+                    ["r", "byte_t"],
+                    {"stack_delta": -3}
+                ],
+                "0x09": [
+                    ["x", "varuint32_t"]
+                ],
+                "0x0a": [
+                    ["r", "byte_t"],
+                    ["s", "byte_t"],
+                    {"stack_delta": -3}
+                ],
+                "0x0b": [
+                    ["r", "byte_t"],
+                    {"stack_delta": -3}
+                ],
+                "0x0c": [
+                    ["y", "varuint32_t"],
+                    ["x", "varuint32_t"],
+                    {"stack_delta": -3}
+                ],
+                "0x0d": [
+                    ["x", "varuint32_t"]
+                ],
+                "0x0e": [
+                    ["x", "varuint32_t"],
+                    ["y", "varuint32_t"],
+                    {"stack_delta": -3}
+                ],
+                "0x0f": [
+                    ["x", "varuint32_t"],
+                    {"stack_delta": -1}
+                ],
+                "0x10": [
+                    ["x", "varuint32_t"],
+                    {"stack_delta": 1}
+                ],
+                "0x11": [
+                    ["x", "varuint32_t"],
+                    {"stack_delta": -3}
+                ]
+            },
+            "0xa0": [
+                {"stack_delta": -1}
+            ],
+            "0xa1": [
+                {"stack_delta": -1}
+            ],
+            "0xa2": [
+                {"stack_delta": -1}
+            ],
+            "0xa3": [
+                {"stack_delta": -1}
+            ],
+            "0xa4": [
+                {"stack_delta": -1}
+            ],
+            "0xa5": [
+                {"stack_delta": -1}
+            ],
+            "0xa6": [
+                {"stack_delta": -1}
+            ],
+            "0xa7": [],
+            "0xa8": [],
+            "0xa9": [],
+            "0xaa": [],
+            "0xab": [],
+            "0xac": [],
+            "0xad": [],
+            "0xae": [],
+            "0xaf": [],
+            "0xb0": [],
+            "0xb1": [],
+            "0xb2": [],
+            "0xb3": [],
+            "0xb4": [],
+            "0xb5": [],
+            "0xb6": [],
+            "0xb7": [],
+            "0xb8": [],
+            "0xb9": [],
+            "0xba": [],
+            "0xbb": [],
+            "0xbc": [],
+            "0xbd": [],
+            "0xbe": [],
+            "0xbf": [],
+            "0xc0": [],
+            "0xc1": [],
+            "0xc2": [],
+            "0xc3": [],
+            "0xc4": []
+        }
+    },
+    "SectionTypes": {
+        "DataCountSection": {
+            "OpCode": "0x0c",
+            "Fields": {
+                "size": {
+                    "Type": "varuint32_t",
+                    "Desc": "Section size in bytes"
+                },
+                "seccount": {
+                    "Type": "varuint32_t",
+                    "Desc": "The number of data sections"
+                }
+            }
+        },
+        "CustomSection": {
+            "OpCode": "0x00",
+            "Fields": {
+                "bytes": {
+                    "Type": ["byte_t"],
+                    "Desc": "Custom bytes"
+                }
+            }
+        },
+        "TypeSection": {
+            "OpCode": "0x01",
+            "Fields": {
+                "size": {
+                    "Type": "varuint32_t",
+                    "Desc": "Section size in bytes"
+                },
+                "*": ["function_signature_t"]
+            }
+        },
+        "ImportSection": {
+            "OpCode": "0x02",
+            "Fields": {
+                "size": {
+                    "Type": "varuint32_t",
+                    "Desc": "Section size in bytes"
+                },
+                "*": ["import_t"]
+            }
+        },
+        "FunctionSection": {
+            "OpCode": "0x03",
+            "Fields": {
+                "size": {
+                    "Type": "varuint32_t",
+                    "Desc": "Section size in bytes"
+                },
+                "*": ["function_declaration_t"]
+            }
+        },
+        "TableSection": {
+            "OpCode": "0x04",
+            "Fields": {
+                "size": {
+                    "Type": "varuint32_t",
+                    "Desc": "Section size in bytes"
+                },
+                "*": ["table_description_t"]
+            }
+        },
+        "LinearMemorySection": {
+            "OpCode": "0x05",
+            "Fields": {
+                "size": {
+                    "Type": "varuint32_t",
+                    "Desc": "Section size in bytes"
+                },
+                "*": ["linear_memory_description_t"]
+            }
+        },
+        "GlobalSection": {
+            "OpCode": "0x06",
+            "Fields": {
+                "size": {
+                    "Type": "varuint32_t",
+                    "Desc": "Section size in bytes"
+                },
+                "*": ["global_declaration_t"]
+            }
+        },
+        "ExportSection": {
+            "OpCode": "0x07",
+            "Fields": {
+                "size": {
+                    "Type": "varuint32_t",
+                    "Desc": "Section size in bytes"
+                },
+                "*": ["export_t"]
+            }
+        },
+        "StartSection": {
+            "OpCode": "0x08",
+            "Fields": {
+                "size": {
+                    "Type": "varuint32_t",
+                    "Desc": "Section size in bytes"
+                },
+                "index": {
+                    "Type": "varuint32_t",
+                    "Desc": "index into the function index space"
+                }
+            }
+        },
+        "ElementSection": {
+            "OpCode": "0x09",
+            "Fields": {
+                "size": {
+                    "Type": "varuint32_t",
+                    "Desc": "Section size in bytes"
+                },
+                "*": ["table_initializer_t"]
+            }
+        },
+        "CodeSection": {
+            "OpCode": "0x0a",
+            "Fields": {
+                "size": {
+                    "Type": "varuint32_t",
+                    "Desc": "Section size in bytes"
+                },
+                "*": ["function_body_t"]
+            }
+        },
+        "DataSection": {
+            "OpCode": "0x0b",
+            "Fields": {
+                "size": {
+                    "Type": "varuint32_t",
+                    "Desc": "Section size in bytes"
+                },
+                "*": ["data_initializer_t"]
+            }
+        }
+    },
+    "ModuleTypes": {
+        "Module": {
+            "Fields": {
+                "magic_cookie": {
+                    "Type": "uint32_t",
+                    "Desc": "magic cookie identifying the contents of a file as a WebAssembly module"
+                },
+                "version": {
+                    "Type": "uint32_t",
+                    "Desc": "WebAssembly version number"
+                },
+                "TypeSection": {
+                    "Type": "TypeSection",
+                    "Count": "?"
+                },
+                "ImportSection": {
+                    "Type": "ImportSection",
+                    "Count": "?"
+                },
+                "FunctionSection": {
+                    "Type": "FunctionSection",
+                    "Count": "?"
+                },
+                "TableSection": {
+                    "Type": "TableSection",
+                    "Count": "?"
+                },
+                "LinearMemorySection": {
+                    "Type": "LinearMemorySection",
+                    "Count": "?"
+                },
+                "GlobalSection": {
+                    "Type": "GlobalSection",
+                    "Count": "?"
+                },
+                "ExportSection": {
+                    "Type": "ExportSection",
+                    "Count": "?"
+                },
+                "StartSection": {
+                    "Type": "StartSection",
+                    "Count": "?"
+                },
+                "ElementSection": {
+                    "Type": "ElementSection",
+                    "Count": "?"
+                },
+                "DataCountSection": {
+                    "Type": "DataCountSection",
+                    "Count": "?"
+                },
+                "CodeSection": {
+                    "Type": "CodeSection",
+                    "Count": "?"
+                },
+                "DataSection": {
+                    "Type": "DataSection",
+                    "Count": "?"
+                }
+            }
+        }
+    }
+}

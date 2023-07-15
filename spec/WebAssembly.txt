@@ -1,0 +1,240 @@
+                          arr(T) ::= size : varuint32_t
+                                     elems : T*size
+
+                          byte_t ::= prim 'unsigned 8-bit integer'
+
+                        uint32_t ::= prim 'unsigned 32-bit integer'
+
+                      varuint1_t ::= prim 'unsigned LEB128 encoded integer [0x0, 0x1)'
+
+                      varuint7_t ::= prim 'unsigned LEB128 encoded integer [0x0, 0x7f)'
+
+                     varuint32_t ::= prim 'unsigned LEB128 encoded integer [0x0, 0xffffffff)'
+
+                     varuint64_t ::= prim 'unsigned LEB128 encoded integer [0x0, 0xffffffffffffffff)'
+
+                      varsint7_t ::= prim 'signed LEB128 encoded integer [-0x40, 0x3f)'
+
+                     varsint32_t ::= prim 'signed LEB128 encoded integer [-0x80000000, 0x7fffffff)'
+
+                     varsint64_t ::= prim 'signed LEB128 encoded integer [-0x8000000000000000, 0x7fffffffffffffff)'
+
+                       float32_t ::= prim '32-bit IEEE 754-2008 float'
+
+                       float64_t ::= prim '64-bit IEEE 754-2008 float'
+
+                 type_encoding_t ::= varsint7_t[i32=-0x01|i64=-0x02|f32=-0x03|f64=-0x04|v128=-0x05|funcref=-0x10|externref=-0x11|func=-0x20|void=-0x40]
+
+                       varuptr_t ::= (varuint32_t|varuint64_t)
+
+                      memflags_t ::= varuint32_t[align=0:32]
+
+                    identifier_t ::= arr(byte_t)
+
+                 external_kind_t ::= varuint7_t[Function=0x00|Table=0x01|Memory=0x02|Global=0x03]
+
+                reference_type_t ::= varsint7_t[type_encoding_t.funcref|type_encoding_t.externref]
+
+             vector_value_type_t ::= varsint7_t[type_encoding_t.v128]
+
+            integer_value_type_t ::= varsint7_t[type_encoding_t.i32|type_encoding_t.i64]
+
+     floating_point_value_type_t ::= varsint7_t[type_encoding_t.f32|type_encoding_t.f64]
+
+                signature_type_t ::= varsint7_t[type_encoding_t.func]
+
+                    value_type_t ::= varsint7_t[integer_value_type_t.*|floating_point_value_type_t.*|vector_value_type_t.*|reference_type_t.*]
+
+                   instruction_t ::= 0X00-0X01|0X45|0X50|0X67-0X69|0X79-0X7B|0X8B-0X91|0X99-0X9F|0XD1|0XA7-0XC4 (nvals 0)
+                                     0X02-0X03 block_signature_type_t (nvals 0) (depth 1)
+                                     0X04 block_signature_type_t (nvals -1) (depth 1)
+                                     0X05 (nvals *) (depth None)
+                                     0X0B (nvals *) (depth -1)
+                                     0X0C-0X0D|0X10|0X12 varuint32_t (nvals *)
+                                     0X0E arr(varuint32_t) varuint32_t (nvals *)
+                                     0X0F (nvals *)
+                                     0X11 varuint32_t varuint32_t (nvals *)
+                                     0X1C arr(value_type_t) (nvals -2)
+                                     0X1A|0X46-0X4F|0X51-0X66|0X6A-0X78|0X7C-0X8A|0X92-0X98|0XA0-0XA6 (nvals -1)
+                                     0X1B (nvals -2)
+                                     0X20|0X23|0XD2 varuint32_t (nvals 1)
+                                     0X21|0X24 varuint32_t (nvals -1)
+                                     0X22|0X25 varuint32_t (nvals 0)
+                                     0X26 varuint32_t (nvals -2)
+                                     0X28-0X35 memflags_t varuptr_t (nvals 0)
+                                     0X36-0X3E memflags_t varuptr_t (nvals -2)
+                                     0X3F varuint1_t (nvals 1)
+                                     0X40 varuint1_t (nvals 0)
+                                     0X41 varsint32_t (nvals 1)
+                                     0X42 varsint64_t (nvals 1)
+                                     0X43 float32_t (nvals 1)
+                                     0X44 float64_t (nvals 1)
+                                     0XD0 reference_type_t (nvals 1)
+                                     0XFC 0X00-0X07 (nvals 0)
+                                     0XFC 0X08 varuint32_t byte_t (nvals -3)
+                                     0XFC 0X09|0X0D varuint32_t (nvals 0)
+                                     0XFC 0X0A byte_t byte_t (nvals -3)
+                                     0XFC 0X0B byte_t (nvals -3)
+                                     0XFC 0X0C|0X0E varuint32_t varuint32_t (nvals -3)
+                                     0XFC 0X0F varuint32_t (nvals -1)
+                                     0XFC 0X10 varuint32_t (nvals 1)
+                                     0XFC 0X11 varuint32_t (nvals -3)
+
+          block_signature_type_t ::= T => type_value : varsint32_t
+                                     F => type_index : varuint32_t
+
+              resizable_limits_t ::= flags : varuint32_t
+                                     flags=0x00 => minimum : varuint32_t
+                                     flags=0x01 => minimum : varuint32_t
+                                     flags=0x01 => maximum : varuint32_t
+
+instantiation_time_initializer_t ::= instruction : instruction_t*
+
+             table_description_t ::= element_type : reference_type_t
+                                     resizable : resizable_limits_t
+
+     linear_memory_description_t ::= limits : resizable_limits_t
+
+            global_description_t ::= type : value_type_t
+                                     mutability : varuint1_t
+
+                   local_entry_t ::= count : varuint32_t
+                                     type : value_type_t
+
+            function_signature_t ::= form : signature_type_t
+                                     form=func => params : arr(value_type_t)
+                                     form=func => returns : arr(value_type_t)
+
+                        import_t ::= module_name : identifier_t
+                                     export_name : identifier_t
+                                     kind : external_kind_t
+                                     kind=Function => sig_index : varuint32_t
+                                     kind=Table => desc : table_description_t
+                                     kind=Memory => desc : linear_memory_description_t
+                                     kind=Global => desc : global_description_t
+
+          function_declaration_t ::= sig_index : varuint32_t
+
+            global_declaration_t ::= desc : global_description_t
+                                     init : instantiation_time_initializer_t
+
+                        export_t ::= name : identifier_t
+                                     kind : external_kind_t
+                                     kind=Function => index : varuint32_t
+                                     kind=Table => index : varuint32_t
+                                     kind=Memory => index : varuint32_t
+                                     kind=Global => index : varuint32_t
+
+             table_initializer_t ::= flags : varuint32_t
+                                     flags=0x00 => offset : instantiation_time_initializer_t
+                                     flags=0x00 => elems : arr(varuint32_t)
+                                     flags=0x01 => elemkind : byte_t
+                                     flags=0x01 => elems : arr(varuint32_t)
+                                     flags=0x02 => tableidx : varuint32_t
+                                     flags=0x02 => offset : instantiation_time_initializer_t
+                                     flags=0x02 => elemkind : byte_t
+                                     flags=0x02 => elems : arr(varuint32_t)
+                                     flags=0x03 => elemkind : byte_t
+                                     flags=0x03 => elems : arr(varuint32_t)
+                                     flags=0x04 => offset : instantiation_time_initializer_t
+                                     flags=0x04 => elems : arr(instantiation_time_initializer_t)
+                                     flags=0x05 => elemtype : reference_type_t
+                                     flags=0x05 => elems : arr(instantiation_time_initializer_t)
+                                     flags=0x06 => tableidx : varuint32_t
+                                     flags=0x06 => offset : instantiation_time_initializer_t
+                                     flags=0x06 => elemtype : reference_type_t
+                                     flags=0x06 => elems : arr(instantiation_time_initializer_t)
+                                     flags=0x07 => elemtype : reference_type_t
+                                     flags=0x07 => elems : arr(instantiation_time_initializer_t)
+
+                 function_body_t ::= body_size : varuint32_t
+                                     locals : arr(local_entry_t)
+                                     instructions : instruction_t*
+
+              data_initializer_t ::= flags : varuint32_t
+                                     flags=0x00 => offset : instantiation_time_initializer_t
+                                     flags=0x00 => data : arr(byte_t)
+                                     flags=0x01 => data : arr(byte_t)
+                                     flags=0x02 => memidx : varuint32_t
+                                     flags=0x02 => offset : instantiation_time_initializer_t
+                                     flags=0x02 => data : arr(byte_t)
+
+                DataCountSection ::= 0x0c
+                                     size : varuint32_t
+                                     seccount : varuint32_t
+
+                     TypeSection ::= 0x01
+                                     size : varuint32_t
+                                     arr(function_signature_t)
+
+                   ImportSection ::= 0x02
+                                     size : varuint32_t
+                                     arr(import_t)
+
+                 FunctionSection ::= 0x03
+                                     size : varuint32_t
+                                     arr(function_declaration_t)
+
+                    TableSection ::= 0x04
+                                     size : varuint32_t
+                                     arr(table_description_t)
+
+             LinearMemorySection ::= 0x05
+                                     size : varuint32_t
+                                     arr(linear_memory_description_t)
+
+                   GlobalSection ::= 0x06
+                                     size : varuint32_t
+                                     arr(global_declaration_t)
+
+                   ExportSection ::= 0x07
+                                     size : varuint32_t
+                                     arr(export_t)
+
+                    StartSection ::= 0x08
+                                     size : varuint32_t
+                                     index : varuint32_t
+
+                  ElementSection ::= 0x09
+                                     size : varuint32_t
+                                     arr(table_initializer_t)
+
+                     CodeSection ::= 0x0a
+                                     size : varuint32_t
+                                     arr(function_body_t)
+
+                     DataSection ::= 0x0b
+                                     size : varuint32_t
+                                     arr(data_initializer_t)
+
+                   CustomSection ::= 0x00
+                                     bytes : arr(byte_t)
+
+                          Module ::= magic_cookie : uint32_t
+                                     version : uint32_t
+                                     : CustomSection*
+                                     TypeSection : TypeSection?
+                                     : CustomSection*
+                                     ImportSection : ImportSection?
+                                     : CustomSection*
+                                     FunctionSection : FunctionSection?
+                                     : CustomSection*
+                                     TableSection : TableSection?
+                                     : CustomSection*
+                                     LinearMemorySection : LinearMemorySection?
+                                     : CustomSection*
+                                     GlobalSection : GlobalSection?
+                                     : CustomSection*
+                                     ExportSection : ExportSection?
+                                     : CustomSection*
+                                     StartSection : StartSection?
+                                     : CustomSection*
+                                     ElementSection : ElementSection?
+                                     : CustomSection*
+                                     DataCountSection : DataCountSection?
+                                     : CustomSection*
+                                     CodeSection : CodeSection?
+                                     : CustomSection*
+                                     DataSection : DataSection?
+                                     : CustomSection*
+
