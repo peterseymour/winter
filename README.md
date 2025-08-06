@@ -4,7 +4,7 @@ Designed as a target for compiler testing it performs enough validation to pass 
 
 
  *  **Winter is relatively simple.**
- The interpreter is under [3,500 semicolons][src].
+ The interpreter is around [4,000 semicolons][src].
  The main interpreter loop is implemented as a giant switch/case statement.
  As much information is pre-computed to reduce instruction overhead.
  For instance functions calls that cross module boundaries are detected ahead of time and handled separately from the main call instruction.
