@@ -1,3 +1,5 @@
+#python3 emit.py > WebAssembly.txt
+
 from ast import named_types, poly_types
 from itertools import chain
 

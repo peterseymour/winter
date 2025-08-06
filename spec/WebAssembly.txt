@@ -3,6 +3,8 @@
 
                           byte_t ::= prim 'unsigned 8-bit integer'
 
+                          v128_t ::= prim 128-bit vector'
+
                         uint32_t ::= prim 'unsigned 32-bit integer'
 
                       varuint1_t ::= prim 'unsigned LEB128 encoded integer [0x0, 0x1)'
@@ -45,7 +47,7 @@
 
                     value_type_t ::= varsint7_t[integer_value_type_t.*|floating_point_value_type_t.*|vector_value_type_t.*|reference_type_t.*]
 
-                   instruction_t ::= 0X00-0X01|0X45|0X50|0X67-0X69|0X79-0X7B|0X8B-0X91|0X99-0X9F|0XD1|0XA7-0XC4 (nvals 0)
+                   instruction_t ::= 0X00-0X01|0X45|0X50|0X67-0X69|0X79-0X7B|0X8B-0X91|0X99-0X9F|0XA7-0XC4|0XD1 (nvals 0)
                                      0X02-0X03 block_signature_type_t (nvals 0) (depth 1)
                                      0X04 block_signature_type_t (nvals -1) (depth 1)
                                      0X05 (nvals *) (depth None)
@@ -54,9 +56,9 @@
                                      0X0E arr(varuint32_t) varuint32_t (nvals *)
                                      0X0F (nvals *)
                                      0X11 varuint32_t varuint32_t (nvals *)
-                                     0X1C arr(value_type_t) (nvals -2)
                                      0X1A|0X46-0X4F|0X51-0X66|0X6A-0X78|0X7C-0X8A|0X92-0X98|0XA0-0XA6 (nvals -1)
                                      0X1B (nvals -2)
+                                     0X1C arr(value_type_t) (nvals -2)
                                      0X20|0X23|0XD2 varuint32_t (nvals 1)
                                      0X21|0X24 varuint32_t (nvals -1)
                                      0X22|0X25 varuint32_t (nvals 0)
@@ -79,6 +81,17 @@
                                      0XFC 0X0F varuint32_t (nvals -1)
                                      0XFC 0X10 varuint32_t (nvals 1)
                                      0XFC 0X11 varuint32_t (nvals -3)
+                                     0XFD 0X00-0X0A|0X5C-0X5D memflags_t varuptr_t (nvals 0)
+                                     0XFD 0X64|0X67-0X6A|0X74-0X75|0X7A|0X7C-0X81|0X83-0X84|0X87-0X8A|0X94|0X0F-0X10|0XA0-0XA1|0XA3-0XA4|0XA7-0XA9|0X11|0XAA|0X12-0X13|0XC0-0XC1|0XC3-0XC4|0XC7|0X14|0XC8-0XCA|0XE0-0XE1|0XE3|0XEC-0XED|0XEF|0XF8-0XFF|0X4D|0X53|0X5E-0X63 (nvals 0)
+                                     0XFD 0X65-0X66|0X6B-0X73|0X76-0X79|0X7B|0X82|0X85-0X86|0X8B|0X0E|0X8C-0X93|0X95-0X99|0X9B-0X9F|0XAB-0XAE|0XB1|0XB5-0XBA|0XBC-0XBF|0XCB-0XCE|0XD1|0XD5-0XDF|0XE4-0XEB|0XF0-0XF7|0X23-0X4C|0X4E-0X51 (nvals -1)
+                                     0XFD 0X0B memflags_t varuptr_t (nvals -2)
+                                     0XFD 0X0C v128_t (nvals 1)
+                                     0XFD 0X0D v128_t (nvals -1)
+                                     0XFD 0X15-0X16|0X18-0X19|0X1B|0X1D|0X1F|0X21 byte_t (nvals 0)
+                                     0XFD 0X17|0X1A|0X1C|0X1E|0X20|0X22 byte_t (nvals -1)
+                                     0XFD 0X52 (nvals -2)
+                                     0XFD 0X54-0X57 memflags_t varuptr_t byte_t (nvals -1)
+                                     0XFD 0X58-0X5B memflags_t varuptr_t byte_t (nvals -2)
 
           block_signature_type_t ::= T => type_value : varsint32_t
                                      F => type_index : varuint32_t

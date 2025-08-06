@@ -3,6 +3,18 @@ import sys
 from pathlib import Path
 import subprocess, time, os
 from float import Float, FiniteClass, InfinityClass, NaNClass
+from v128 import Vec128
+
+
+class MinusZero(int):
+    def __float__(self):
+        return float(str(self))
+
+    def __str__(self):
+        return "-0"
+
+
+_Zero = MinusZero()
 
 
 class Reader:
@@ -53,7 +65,7 @@ SYM = re.compile('[a-zA-Z0-9_.>]')
 SEP = re.compile('[=]')
 LAB = re.compile('[a-zA-Z0-9-._]')
 INT = re.compile('[0-9-+]')
-DEC = re.compile('[.0-9-+]')
+DEC = re.compile('[.0-9-+_]')
 HEX = re.compile('[0-9a-fA-F_]')
 
 
@@ -110,7 +122,7 @@ def tokens(rdr):
 
                 if rdr.peek().lower() == 'p':
                     assert rdr.read().lower() == 'p'
-                    decexp = rdr.read(DEC)
+                    decexp = rdr.read(DEC).replace('_', '')
 
                 hexval = hexint
                 if hexfrac is not None:
@@ -123,8 +135,11 @@ def tokens(rdr):
                     num = Float.parse(hexval)
                 else:
                     num = int(hexint, 16)
+
+                if isinstance(num, int) and num == 0 and sign == '-':
+                    num = _Zero
             else:
-                num = rdr.read(DEC)
+                num = rdr.read(DEC).replace('_', '')
 
                 if num in ('-', '+') and (rdr.peek() + rdr.peek(1) + rdr.peek(2)) in ('inf', 'nan'):
                     sign = num
@@ -144,6 +159,8 @@ def tokens(rdr):
                     else:
                         num = Float.parse(f"{sign}{rep}")
                 else:
+                    sign = '-' if num[0] == '-' else '+'
+
                     if rdr.peek() in "eE":
                         num += rdr.read()
                         num += rdr.read(INT)
@@ -152,6 +169,9 @@ def tokens(rdr):
                         num = int(num, 10)
                     except ValueError:
                         num = Float.parse(num)
+
+                    if isinstance(num, int) and num == 0 and sign == '-':
+                        num = _Zero
 
             yield num
         elif ''.join(rdr.peek(i) for i in range(3)) in ('nan', 'inf'):
@@ -232,32 +252,80 @@ def parse(toks, tok=None):
         return tok
 
 
+def parse_int(s):
+    try:
+        if isinstance(s, (int, str)):
+            return int(s)
+    except ValueError:
+        pass
+
+    raise TypeError(f"Cannot parse {s!r} as integer")
+
+
+def parse_float(typ, val):
+    try:
+        #extend the payload so the width of the resulting float is known when converting to a string argument
+        if isinstance(val, Float.Literal) and 'nan:0x' in str(val):
+            return Float.parse(f"{val.sign}nan:0x{'0' * ({'f32': 8, 'f64': 16}[typ] - len(val.payload))}{val.payload}")
+        elif isinstance(val, Float.Literal):
+            return val
+        elif isinstance(val, int):
+            return Float.parse(str(val))
+    except ValueError:
+        pass
+
+    raise TypeError(f"Cannot parse {s!r} as float")
+
+
+
 def valof(expr):
     if isinstance(expr, str):
         return str(expr)
 
-    typ, val = expr
+    typ, val, *args = expr
 
     if typ in ('i32.const', 'i64.const'):
-        assert isinstance(val, int)
+        assert isinstance(val, int) and not args
         return val
     elif typ in ('f32.const', 'f64.const'):
-        assert isinstance(val, (Float.Literal, int))
-
-        #extend the payload so the width of the resulting float is known when converting to a string argument
-        if isinstance(val, Float.Literal) and 'nan:0x' in str(val):
-            return Float.parse(f"{val.sign}nan:0x{'0' * ({'f32.const': 8, 'f64.const': 16}[typ] - len(val.payload))}{val.payload}")
-
-        return val if isinstance(val, Float.Literal) else Float.parse(str(val))
+        assert isinstance(val, (Float.Literal, int)) and not args
+        typ = typ.split('.')[0]
+        return parse_float(typ, val)
+    elif (typ, val) in [('v128.const', 'i8x16'), ('v128.const', 'i16x8'), ('v128.const', 'i32x4'), ('v128.const', 'i64x2')]:
+        assert len(args) == int(val.split('x')[-1])
+        typ = val.split('x')[0]
+        return Vec128.parse(typ, list(map(parse_int, args)))
+    elif (typ, val) in [('v128.const', 'f32x4'), ('v128.const', 'f64x2')]:
+        assert len(args) == int(val.split('x')[-1])
+        typ = val.split('x')[0]
+        return Vec128.parse(typ, [parse_float(typ, arg) for arg in args])
     elif typ == "ref.extern":
-        assert isinstance(val, int)
+        assert isinstance(val, int) and not args
         return val
     elif expr == ('ref.null', 'extern'):
+        assert not args
         return "null"
     elif expr == ('ref.null', 'func'):
+        assert not args
         return "null"
     else:
         raise NotImplementedError(f"valof({expr!r})")
+
+
+def cmdargof(expr):
+    if isinstance(expr, str):
+        return str(expr)
+
+    typ, *_ = expr
+
+    val = valof(expr)
+
+    if typ == 'v128.const':
+        return str(val.to_int())
+    elif typ in ('f32.const', 'f64.const'):
+        return str(val.with_type(typ.split('.')[0]))
+    else:
+        return str(val)
 
 
 def with_type(typed_value):
@@ -266,6 +334,8 @@ def with_type(typed_value):
     if isinstance(value, Float.Literal):
         assert typ in ('f32', 'f64')
         return value.with_type(typ)
+    elif typ in Vec128.TYPES and isinstance(value, int):
+        return Vec128.decode(typ.split('x')[0], value)
 
     return value
 
@@ -273,7 +343,9 @@ def with_type(typed_value):
 def typeof(expr):
     if isinstance(expr, tuple):
         typ, *_ = expr
-        if typ.endswith(".const"):
+        if typ == "v128.const":
+            return expr[1]
+        elif typ.endswith(".const"):
             return typ.split('.')[0]
         elif typ == "ref.extern" or expr == ('ref.null', 'extern'):
             return "externref"
@@ -290,6 +362,8 @@ def typeof(expr):
 def pretty(val, typ):
     if typ == 'errmsg':
         return repr(val)
+    elif typ in Vec128.TYPES and isinstance(val, int):
+        return f"{Vec128.decode(typ.split('x')[0], val)}:{typ}"
     else:
         return f"{val}:{typ}"
 
@@ -431,6 +505,11 @@ class POpenCommand(GenericCommand):
         self.is_error = len(err_lines) > 0
         self.is_ready = len(std_lines) > 0 and std_lines[-1].strip() == '>'
 
+        if self.trace:
+            for line in std_lines:
+                if line.startswith('eval'):
+                    print(f"  {line}")
+
         return (std_lines[:-1] if self.is_ready else std_lines), err_lines
 
     def start(self):
@@ -567,6 +646,10 @@ def equiv(args, ignore_nan_sign=True):
         else:
             raise NotImplementedError
 
+    elif typ in Vec128.TYPES:
+        assert issubclass(cls, Vec128)
+        return isinstance(rhs, Vec128) and lhs == rhs
+
     elif typ == "externref":
         assert cls is int or lhs == "null"
         return type(rhs) is cls and lhs == rhs
@@ -576,7 +659,7 @@ def equiv(args, ignore_nan_sign=True):
         return type(rhs) is cls and lhs == rhs
 
     else:
-        raise NotImplementedError
+        raise NotImplementedError(f"{lhs} == {rhs} ({typ})")
 
 
 def has_passed(results, targets):
@@ -647,9 +730,11 @@ def test_file(wast_path, Invoker=Winter, kwargs={}):
         def display_scoped(namespace, name):
             return f"{display(namespace)}:{display(name)}" if namespace else display(name)
 
+        KNOWN_MODULES = ('quote',)
+
         def register_module(module_label, module_name, module_path=None):
             assert module_label not in registered or registered[module_label] == module_label[1:]
-            assert module_label.startswith('$')
+            assert module_label.startswith('$') or module_label in KNOWN_MODULES
             assert not module_name.startswith('$')
 
             registered[module_label] = module_name
@@ -674,7 +759,10 @@ def test_file(wast_path, Invoker=Winter, kwargs={}):
 
                 if expr[0] in 'module':
                     curr_module_label = expr[1] if len(expr) > 1 and isinstance(expr[1], Sym) and expr[1] not in ("binary",) else None
-                    assert curr_module_label is None or curr_module_label.startswith('$')
+                    if curr_module_label is None or curr_module_label.startswith('$') or curr_module_label in KNOWN_MODULES:
+                        pass
+                    else:
+                        raise NameError(f"Unexpected module name {curr_module_label!r}")
                     compiled, wasm_path = compile_module(text=rdr.content[b:rdr.i])
 
                     if not compiled:
@@ -689,7 +777,7 @@ def test_file(wast_path, Invoker=Winter, kwargs={}):
                     invoker.load(wasm_path)
 
                     if curr_module_label is not None:
-                        register_module(curr_module_label, curr_module_label[1:])
+                        register_module(curr_module_label, curr_module_label[1 if curr_module_label.startswith('$') else 0:])
 
                 elif expr[0] == 'register':
                     if len(expr) == 3:
@@ -709,11 +797,10 @@ def test_file(wast_path, Invoker=Winter, kwargs={}):
                     namespace = registered.get(module_label)
 
                     disp_args = '(' + ', '.join(map(dispof, args)) + ')' if len(args) != 1 else dispof(args[0])
-                    args = tuple(map(valof, args))
 
                     print(f"{command} {display_scoped(namespace, funcname)}{disp_args}")
 
-                    invoker.invoke(namespace, funcname, args, nresults=0)
+                    invoker.invoke(namespace, funcname, args = tuple(map(cmdargof, args)), nresults=0)
                 elif expr[0] in ('assert_return', 'assert_exhaustion', 'assert_trap', 'assert_unlinkable'):
                     assertion, subexpr, *targets = expr
 
@@ -732,7 +819,7 @@ def test_file(wast_path, Invoker=Winter, kwargs={}):
                         else:
                             print(f"{assertion} {display_scoped(namespace, funcname)}{disp_args if len(args) != 1 else '(' + disp_args + ')'}")
 
-                        results, std_lines, err_lines = invoker.invoke(namespace, funcname, tuple(map(valof, args)), expect_error=assertion not in ('assert_return',), nresults=len(targets))
+                        results, std_lines, err_lines = invoker.invoke(namespace, funcname, tuple(map(cmdargof, args)), expect_error=assertion not in ('assert_return',), nresults=len(targets))
 
                         if not has_passed(results, targets):
                             for line in std_lines:

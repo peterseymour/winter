@@ -1,3 +1,5 @@
+#python3 gen.py ../src/cpp/wasm/gen/
+
 from ast import *
 import re
 from itertools import chain
@@ -15,6 +17,7 @@ vartypes = {
     'varsint7_t': 'int8_t',
     'varsint32_t': 'int32_t',
     'varsint64_t': 'int64_t',
+    'v128_t': 'uint128_t',
 }
 
 
@@ -225,7 +228,7 @@ def generate(typename, typ, hpp, tpp, cpp):
 
     if isinstance(typ, PrimitiveType):
         if vartype(typename) != typename:
-            if vartype(typename).endswith('_t'):
+            if vartype(typename).endswith('_t') and typename != "v128_t":
                 hpp.write(f"""
                     struct {typename};
                 """)
@@ -243,17 +246,7 @@ def generate(typename, typ, hpp, tpp, cpp):
             }};
         """)
 
-        if isinstance(typ, IntegerType):
-            hpp.write(f"""
-                template<> {vartype(typename)} read<{templtype(typename)}>(Reader& rdr);
-            """)
-
-            cpp.write(f"""
-                template<> {vartype(typename)} read<{templtype(typename)}>(Reader& rdr) {{
-                    return rdr.read<{vartype(typename)}>();
-                }}
-            """)
-        elif isinstance(typ, FloatType):
+        if isinstance(typ, (IntegerType, FloatType, VectorType)):
             hpp.write(f"""
                 template<> {vartype(typename)} read<{templtype(typename)}>(Reader& rdr);
             """)
@@ -510,13 +503,19 @@ def generate(typename, typ, hpp, tpp, cpp):
 
             cpp.write(f"}} else", indent=indent+4); cpp.f.write(" ")
 
-        def write_instrs_footer(prefix=None, indent=0):
-            cpp.write(f"""
-                        error("Bad opcode", std::hex, std::setw(2), std::setfill('0'), {(('0x%02X' % prefix) + ', ') if prefix else ''}(int) opcode, "while reading instruction");
+        def write_instrs_footer(prefix, indent):
+            if prefix:
+                cpp.write(f"""
+                            error(fstr("Bad opcode {prefix:02X} %d while reading instruction", opcode));
 
-                    return {{.prefix={'0x%02X' % prefix if prefix else 0}, .opcode=opcode, .depth=depth, .nvals=nvals}};
-                }}
-            """, indent=indent)
+                        return {{.prefix=0x{prefix:02x}, .opcode=opcode, .depth=depth, .nvals=nvals}};
+                """, indent=indent)
+            else:
+                cpp.write(f"""
+                            error(fstr("Bad opcode %02x while reading instruction", opcode));
+
+                        return {{.prefix=0, .opcode=opcode, .depth=depth, .nvals=nvals}};
+                """, indent=indent)
 
         prefixes = set()
         for prefix, rngs, _, depth, nvals, imm_types in typ.opcode_ranges():
@@ -531,10 +530,11 @@ def generate(typename, typ, hpp, tpp, cpp):
             cpp.f.write(' ' * 8)
             for rngs, _, depth, nvals, imm_types in (item[1:] for item in typ.opcode_ranges() if item[0] == prefix):
                 write_instrs_reader(rngs, depth, nvals, imm_types, indent=4)
-            write_instrs_footer(prefix=prefix, indent=4)
+            write_instrs_footer(prefix=prefix, indent=8)
+            cpp.write(f"}} else", indent=4); cpp.f.write(" ")
 
-        cpp.write(f"else", indent=4); cpp.f.write(" ")
-        write_instrs_footer()
+        write_instrs_footer(prefix=None, indent=4)
+        cpp.write(f"}}\n", indent=0);
 
         cpp.write(f"""
             template<>
@@ -566,6 +566,10 @@ def generate(typename, typ, hpp, tpp, cpp):
         raise NotImplementedError(f"{typename} {type(typ)}")
 
 
+def init(hpp, tpp, cpp):
+    hpp.write("#include <limits>\n\n")
+
+
 class Writer:
     def __init__(self, f):
         self.f = f
@@ -593,5 +597,7 @@ if __name__ == "__main__":
     dirpath.mkdir(exist_ok=True)
 
     with open(dirpath / "spec.hpp", "w") as hpp, open(dirpath / "spec.tpp", "w") as tpp, open(dirpath / "spec.cpp", "w") as cpp:
+        init(Writer(hpp), Writer(tpp), Writer(cpp))
+
         for typename, typ in chain(poly_types.items(), sorted(named_types.items(), key=lambda item: item[1].depth)):
             generate(typename, typ, Writer(hpp), Writer(tpp), Writer(cpp))

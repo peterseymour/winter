@@ -5,6 +5,7 @@
 #include <cfenv>
 #include "common.hpp"
 
+
 template<typename U>
 uint8_t clz(U x);
 
@@ -41,6 +42,13 @@ template<typename U>
 uint8_t popcnt(U x);
 
 template<>
+inline uint8_t popcnt<uint8_t>(uint8_t x) {
+    static_assert(sizeof(unsigned int) >= sizeof(uint8_t));
+
+    return __builtin_popcount(x);
+}
+
+template<>
 inline uint8_t popcnt<uint32_t>(uint32_t x) {
     static_assert(sizeof(unsigned int) == sizeof(uint32_t));
 
@@ -53,6 +61,21 @@ inline uint8_t popcnt<uint64_t>(uint64_t x) {
 }
 
 template<typename U>
+inline U andnot(U x, U y) {
+    return x & ~y;
+}
+
+template<typename U>
+inline U shl(U x, auto n) {
+    return x << (n % bit_size<U>);
+}
+
+template<typename U>
+inline U shr(U x, auto n) {
+    return x >> (n % bit_size<U>);
+}
+
+template<typename U>
 inline U rotl(U x, int8_t r) {
     return (x << r) | (x >> (std::numeric_limits<U>::digits - r));
 }
@@ -60,6 +83,48 @@ inline U rotl(U x, int8_t r) {
 template<typename U>
 inline U rotr(U x, int8_t r) {
     return (x >> r) | (x << (std::numeric_limits<U>::digits - r));
+}
+
+template<typename U>
+inline U avgr(U x, U y) {
+    auto sum = int2<U>(x) + int2<U>(y);
+    return (sum >> 1) + (sum & 1);
+}
+
+template<typename W, typename N>
+inline W extend(N x) {
+    static_assert (std::numeric_limits<W>::digits >= std::numeric_limits<N>::digits);
+
+    return x;
+}
+
+template<typename N, typename W>
+inline N sat(W x) {
+    static_assert (std::numeric_limits<W>::digits >= std::numeric_limits<N>::digits);
+
+    if (x < std::numeric_limits<N>::min())
+        return std::numeric_limits<N>::min();
+    else if (x > std::numeric_limits<N>::max())
+        return std::numeric_limits<N>::max();
+    else
+        return x;
+}
+
+template<typename U>
+U add_sat(U x, U y) {
+    return sat<U>(int2<U>(x) + int2<U>(y));
+}
+
+template<typename U>
+U sub_sat(U x, U y) {
+    return sat<U>(int2<U>(x) - int2<U>(y));
+}
+
+template<typename U>
+U qmulr_sat(U x, U y) {
+    static constexpr auto W = std::numeric_limits<U>::digits;
+
+    return sat<U>(shr((int2<U>(x) * int2<U>(y)) + (int2<U>(1) << (W - 1)), W));
 }
 
 template<typename F>
@@ -106,7 +171,7 @@ inline F fmin(F v, F w) {
         v == w ? fbits_or(v, w) //min -0 +0 -> -0
       : v <  w ? v
       : w <  v ? w
-      : std::numeric_limits<F>::quiet_NaN();
+      : choose_nan(v, w);
 }
 
 template<typename F>
@@ -115,7 +180,22 @@ inline F fmax(F v, F w) {
         v == w ? fbits_and(v, w) //min -0 +0 -> +0
       : v >  w ? v
       : w >  v ? w
-      : std::numeric_limits<F>::quiet_NaN();
+      : choose_nan(v, w);
+}
+
+template<typename F, typename U>
+inline F fpromote(U x) {
+    return x;
+}
+
+template<typename F, typename U>
+inline F fdemote(U x) {
+    return x;
+}
+
+template<typename F, typename U>
+inline F fconvert(U x) {
+    return x;
 }
 
 template<typename F>

@@ -3,6 +3,10 @@ template<> byte_t read<byte_t>(Reader& rdr) {
     return rdr.read<byte_t>();
 }
 
+template<> uint128_t read<v128_t>(Reader& rdr) {
+    return rdr.read<uint128_t>();
+}
+
 template<> uint32_t read<uint32_t>(Reader& rdr) {
     return rdr.read<uint32_t>();
 }
@@ -327,7 +331,7 @@ template<> instruction_t read<instruction_t>(Reader& rdr) {
     const auto opcode = rdr.read<byte_t>();
     int8_t depth = 0;
     int8_t nvals = 0;
-    if ((0x00 <= opcode and opcode <= 0x01) or opcode == 0x45 or opcode == 0x50 or (0x67 <= opcode and opcode <= 0x69) or (0x79 <= opcode and opcode <= 0x7B) or (0x8B <= opcode and opcode <= 0x91) or (0x99 <= opcode and opcode <= 0x9F) or opcode == 0xD1 or (0xA7 <= opcode and opcode <= 0xC4)) {
+    if ((0x00 <= opcode and opcode <= 0x01) or opcode == 0x45 or opcode == 0x50 or (0x67 <= opcode and opcode <= 0x69) or (0x79 <= opcode and opcode <= 0x7B) or (0x8B <= opcode and opcode <= 0x91) or (0x99 <= opcode and opcode <= 0x9F) or (0xA7 <= opcode and opcode <= 0xC4) or opcode == 0xD1) {
     } else if ((0x02 <= opcode and opcode <= 0x03)) {
         ::read<block_signature_type_t>(rdr);
         ++depth;
@@ -354,12 +358,12 @@ template<> instruction_t read<instruction_t>(Reader& rdr) {
         ::read<varuint32_t>(rdr);
         ::read<varuint32_t>(rdr);
         nvals = instruction_t::var_nvals;
-    } else if (opcode == 0x1C) {
-        ::read<Arr<value_type_t>>(rdr);
-        nvals = -2;
     } else if (opcode == 0x1A or (0x46 <= opcode and opcode <= 0x4F) or (0x51 <= opcode and opcode <= 0x66) or (0x6A <= opcode and opcode <= 0x78) or (0x7C <= opcode and opcode <= 0x8A) or (0x92 <= opcode and opcode <= 0x98) or (0xA0 <= opcode and opcode <= 0xA6)) {
         nvals = -1;
     } else if (opcode == 0x1B) {
+        nvals = -2;
+    } else if (opcode == 0x1C) {
+        ::read<Arr<value_type_t>>(rdr);
         nvals = -2;
     } else if (opcode == 0x20 or opcode == 0x23 or opcode == 0xD2) {
         ::read<varuint32_t>(rdr);
@@ -429,12 +433,50 @@ template<> instruction_t read<instruction_t>(Reader& rdr) {
             ::read<varuint32_t>(rdr);
             nvals = -3;
         } else 
-            error("Bad opcode", std::hex, std::setw(2), std::setfill('0'), 0xFC, (int) opcode, "while reading instruction");
+            error(fstr("Bad opcode FC %d while reading instruction", opcode));
 
-        return {.prefix=0xFC, .opcode=opcode, .depth=depth, .nvals=nvals};
-    }
-    else 
-        error("Bad opcode", std::hex, std::setw(2), std::setfill('0'), (int) opcode, "while reading instruction");
+        return {.prefix=0xfc, .opcode=opcode, .depth=depth, .nvals=nvals};
+    } else if (opcode == 0xFD) {
+        const auto opcode = rdr.read<byte_t>();
+        if ((0x00 <= opcode and opcode <= 0x0A) or (0x5C <= opcode and opcode <= 0x5D)) {
+            ::read<memflags_t>(rdr);
+            ::read<varuptr_t>(rdr);
+        } else if (opcode == 0x64 or (0x67 <= opcode and opcode <= 0x6A) or (0x74 <= opcode and opcode <= 0x75) or opcode == 0x7A or (0x7C <= opcode and opcode <= 0x81) or (0x83 <= opcode and opcode <= 0x84) or (0x87 <= opcode and opcode <= 0x8A) or opcode == 0x94 or (0x0F <= opcode and opcode <= 0x10) or (0xA0 <= opcode and opcode <= 0xA1) or (0xA3 <= opcode and opcode <= 0xA4) or (0xA7 <= opcode and opcode <= 0xA9) or opcode == 0x11 or opcode == 0xAA or (0x12 <= opcode and opcode <= 0x13) or (0xC0 <= opcode and opcode <= 0xC1) or (0xC3 <= opcode and opcode <= 0xC4) or opcode == 0xC7 or opcode == 0x14 or (0xC8 <= opcode and opcode <= 0xCA) or (0xE0 <= opcode and opcode <= 0xE1) or opcode == 0xE3 or (0xEC <= opcode and opcode <= 0xED) or opcode == 0xEF or (0xF8 <= opcode and opcode <= 0xFF) or opcode == 0x4D or opcode == 0x53 or (0x5E <= opcode and opcode <= 0x63)) {
+        } else if ((0x65 <= opcode and opcode <= 0x66) or (0x6B <= opcode and opcode <= 0x73) or (0x76 <= opcode and opcode <= 0x79) or opcode == 0x7B or opcode == 0x82 or (0x85 <= opcode and opcode <= 0x86) or opcode == 0x8B or opcode == 0x0E or (0x8C <= opcode and opcode <= 0x93) or (0x95 <= opcode and opcode <= 0x99) or (0x9B <= opcode and opcode <= 0x9F) or (0xAB <= opcode and opcode <= 0xAE) or opcode == 0xB1 or (0xB5 <= opcode and opcode <= 0xBA) or (0xBC <= opcode and opcode <= 0xBF) or (0xCB <= opcode and opcode <= 0xCE) or opcode == 0xD1 or (0xD5 <= opcode and opcode <= 0xDF) or (0xE4 <= opcode and opcode <= 0xEB) or (0xF0 <= opcode and opcode <= 0xF7) or (0x23 <= opcode and opcode <= 0x4C) or (0x4E <= opcode and opcode <= 0x51)) {
+            nvals = -1;
+        } else if (opcode == 0x0B) {
+            ::read<memflags_t>(rdr);
+            ::read<varuptr_t>(rdr);
+            nvals = -2;
+        } else if (opcode == 0x0C) {
+            ::read<v128_t>(rdr);
+            nvals = 1;
+        } else if (opcode == 0x0D) {
+            ::read<v128_t>(rdr);
+            nvals = -1;
+        } else if ((0x15 <= opcode and opcode <= 0x16) or (0x18 <= opcode and opcode <= 0x19) or opcode == 0x1B or opcode == 0x1D or opcode == 0x1F or opcode == 0x21) {
+            ::read<byte_t>(rdr);
+        } else if (opcode == 0x17 or opcode == 0x1A or opcode == 0x1C or opcode == 0x1E or opcode == 0x20 or opcode == 0x22) {
+            ::read<byte_t>(rdr);
+            nvals = -1;
+        } else if (opcode == 0x52) {
+            nvals = -2;
+        } else if ((0x54 <= opcode and opcode <= 0x57)) {
+            ::read<memflags_t>(rdr);
+            ::read<varuptr_t>(rdr);
+            ::read<byte_t>(rdr);
+            nvals = -1;
+        } else if ((0x58 <= opcode and opcode <= 0x5B)) {
+            ::read<memflags_t>(rdr);
+            ::read<varuptr_t>(rdr);
+            ::read<byte_t>(rdr);
+            nvals = -2;
+        } else 
+            error(fstr("Bad opcode FD %d while reading instruction", opcode));
+
+        return {.prefix=0xfd, .opcode=opcode, .depth=depth, .nvals=nvals};
+    } else 
+        error(fstr("Bad opcode %02x while reading instruction", opcode));
 
     return {.prefix=0, .opcode=opcode, .depth=depth, .nvals=nvals};
 }

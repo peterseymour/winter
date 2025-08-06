@@ -910,6 +910,22 @@ TypedValue Instance::interpret_const(const byte_t* code) const {
                 ret(value_type_t::I32, (uint32_t) f); //just store local index for element sections
                 break;
             }
+            case 0xfd: {
+                read(uint8_t, t);
+
+
+                switch (t) {
+                    case 12: {
+                        read(v128_t, v);
+                        trace("v128.const " << v);
+                        ret(value_type_t::V128, v);
+                        break;
+                    }
+                    default:
+                        error("Unhandled subopcode in const expression 0xfd", (int) t);
+                }
+                break;
+            }
             default:
                 error("Unhandled opcode in const expression", std::hex, (int) opcode);
         }

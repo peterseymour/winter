@@ -136,6 +136,14 @@ class PrimitiveType(Type):
             return FloatType(
                 nbits = int(size_in_bytes) * 8,
             )
+        elif 'vector' in description:
+            assert signed is None
+
+            nbits = int(re.search(r"(\d+) bit", description).group(1))
+
+            return VectorType(
+                nbits = nbits,
+            )
         else:
             assert signed is not None
 
@@ -163,6 +171,10 @@ class LEB128Type(PrimitiveType):
     def emit(self):
         return f"prim '{'signed' if self.signed else 'unsigned'} LEB128 encoded integer [{self.minval:#x}, {self.maxval:#x})'"
 
+
+class VectorType(PrimitiveType):
+    def emit(self):
+        return f"prim {self.nbits}-bit vector'"
 
 class AliasType:
     @classmethod
@@ -463,7 +475,7 @@ class InstructionType(Type):
     @classmethod
     def parse(Self, instrset):
         return InstructionType(
-            instrset = {int(opcode, 16): Self.Instruction.parse(instrset.pop(opcode)) for opcode in sorted(list(instrset))},
+            instrset = {int(opcode, 16 if opcode.startswith('0x') else 10): Self.Instruction.parse(instrset.pop(opcode)) for opcode in sorted(list(instrset))},
         )
 
     def opcode_ranges(self, prefix=None):

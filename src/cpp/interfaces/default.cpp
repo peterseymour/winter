@@ -31,6 +31,11 @@ bool Default::push_arg(ValueStack& stack, value_type_t type, const char* arg) {
             if (parse_decimal<float64_t>(arg, v)) {stack.push(v); return true;}
             break;
         }
+        case value_type_t::V128: {
+            v128_t v;
+            if (parse_integer<v128_t>(arg, v)) {stack.push(v); return true;}
+            break;
+        }
         case value_type_t::FUNCREF: {
             if (strcmp(arg, "null") == 0) {stack.push(type_traits<reference_type_t>::null(reference_type_t::FUNCREF)); return true;}
             break;
@@ -42,7 +47,7 @@ bool Default::push_arg(ValueStack& stack, value_type_t type, const char* arg) {
             break;
         }
         default:
-            error(fstr("Unhandled parsing argument type", type));
+            error(fstr("Unhandled parsing argument type %d", type));
     }
 
     return false;

@@ -150,24 +150,39 @@ template<typename T>
 bool parse_integer(const char* s, T& t) {
     char* endptr;
 
-    if (std::numeric_limits<T>::is_signed) {
-        const long long ll = strtoll(s, &endptr, 10);
+    if constexpr (sizeof(T) == 16) {
+        bool neg = false;
+        if (*s == '-' or *s == '+')
+            neg = (*s++ == '-');
 
-        static_assert (sizeof(ll) >= sizeof(T));
+        t = 0;
+        while (isdigit(*s))
+            t = (t * 10) + (*s++ - '0');
 
-        if (errno != ERANGE and *endptr == '\0' and std::numeric_limits<T>::min() <= ll and ll <= std::numeric_limits<T>::max()) {
-            t = ll;
-            return true;
+        if (neg)
+            t = -t;
+
+        return true;
+    } else {
+        if (std::numeric_limits<T>::is_signed) {
+            const long long ll = strtoll(s, &endptr, 10);
+
+            static_assert (sizeof(ll) >= sizeof(T));
+
+            if (errno != ERANGE and *endptr == '\0' and std::numeric_limits<T>::min() <= ll and ll <= std::numeric_limits<T>::max()) {
+                t = ll;
+                return true;
+            }
         }
-    }
-    else {
-        const unsigned long long ull = strtoull(s, &endptr, 10);
+        else {
+            const unsigned long long ull = strtoull(s, &endptr, 10);
 
-        static_assert (sizeof(ull) >= sizeof(T));
+            static_assert (sizeof(ull) >= sizeof(T));
 
-        if (errno != ERANGE and *endptr == '\0' and std::numeric_limits<T>::min() <= ull and ull <= std::numeric_limits<T>::max()) {
-            t = ull;
-            return true;
+            if (errno != ERANGE and *endptr == '\0' and std::numeric_limits<T>::min() <= ull and ull <= std::numeric_limits<T>::max()) {
+                t = ull;
+                return true;
+            }
         }
     }
 
@@ -182,6 +197,18 @@ template<typename T> struct float_uint;
 
 template<> struct float_uint<float>  {static_assert (sizeof(float)  == sizeof(uint32_t)); using type = uint32_t;};
 template<> struct float_uint<double> {static_assert (sizeof(double) == sizeof(uint64_t)); using type = uint64_t;};
+
+template<size_t n> struct IntN;
+
+template<> struct IntN<1> {using type = int8_t;};
+template<> struct IntN<2> {using type = int16_t;};
+template<> struct IntN<4> {using type = int32_t;};
+template<> struct IntN<8> {using type = int64_t;};
+template<> struct IntN<16> {using type = int128_t;};
+
+template<size_t n> using intn = typename IntN<n>::type;
+
+template<typename I> using int2 = typename IntN<2*sizeof(I)>::type;
 
 inline constexpr auto float_bits(float f) {
     return reinterpret<typename float_uint<float>::type>(f);
@@ -253,5 +280,8 @@ auto choose_nan(F f1, F f2) {
         (nan_limits<F>::base | nan_limits<F>::canonical_payload)
     );
 }
+
+template<typename V>
+static constexpr size_t bit_size = std::numeric_limits<V>::digits + std::numeric_limits<V>::is_signed;
 
 #endif

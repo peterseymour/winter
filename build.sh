@@ -1,5 +1,9 @@
 #! /bin/bash
 
+(cd spec && python3 build.py > WebAssembly.json)
+(cd spec && python3 emit.py > WebAssembly.txt)
+(cd spec && python3 gen.py ../src/cpp/wasm/gen/)
+
 if [ -z "$1" ]
 then
       target_dir="$(pwd)/bin"

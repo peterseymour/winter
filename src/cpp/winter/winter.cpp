@@ -430,7 +430,7 @@ void enter_repl(Interpreter& interp, const char* repl_path) {
                     const auto& sig = *fn->signature;
 
                     if (sig.params.size != nargs - 1) {
-                        std::cerr << "Wrong number of arguments for main" << std::endl;
+                        std::cerr << "Wrong number of arguments for main: found " << sig.params.size << " expected " << nargs - 1 << std::endl;
                         continue;
                     }
 
@@ -445,6 +445,8 @@ void enter_repl(Interpreter& interp, const char* repl_path) {
 
                     if (not Default::push_args(stack, sig, cargs + 1, nargs - 1)) {
                         std::cerr << "Arguments do not match signature: " << sig << std::endl;
+                        for (auto i = 1; i < nargs; ++i)
+                            std::cout << "  [" << i - 1 << "] '" << cargs[i] << "'" << std::endl;
                         continue;
                     }
 

@@ -3,12 +3,14 @@
 
 
 std::ostream& std::operator<<(ostream& os, uint128_t v) {
-    return os << "0x" << std::hex << (uint64_t) (v >> 64) << uint64_t(v) << std::dec;
+    return os << "0x" << std::hex << std::setw(16) << std::setfill('0') << (uint64_t) (v >> 64) << std::setw(16) << std::setfill('0') << uint64_t(v) << std::dec;
 }
 
 
 std::ostream& std::operator<<(ostream& os, int128_t v) {
-    if (v < 0) {
+    if (v == std::numeric_limits<int128_t>::min()) {
+        return os << "-0x100000000000000000000000000000000";
+    } else if (v < 0) {
         os << "-";
         v = -v;
     }

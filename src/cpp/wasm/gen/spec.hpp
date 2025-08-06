@@ -1,3 +1,5 @@
+#include <limits>
+
 template<typename T>
 struct Arr {
     uint32_t size;
@@ -15,6 +17,15 @@ struct VarType<byte_t> {
 };
 
 template<> byte_t read<byte_t>(Reader& rdr);
+
+typedef uint128_t v128_t;
+
+template<>
+struct VarType<v128_t> {
+    using type = uint128_t;
+};
+
+template<> uint128_t read<v128_t>(Reader& rdr);
 
 template<>
 struct VarType<uint32_t> {

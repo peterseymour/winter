@@ -4,6 +4,10 @@
             "Size (in bytes)": "1",
             "Desc": "unsigned; value limited to 8 bits"
         },
+        "v128_t": {
+            "Size (in bytes)": "16",
+            "Desc": "vector; value limited to 128 bits"
+        },
         "uint32_t": {
             "Size (in bytes)": "4",
             "Desc": "unsigned; value limited to 32 bits"
@@ -590,26 +594,26 @@
                     "stack_delta": null
                 }
             ],
-            "0x0b": [
+            "0x0B": [
                 {
                     "depth": -1,
                     "stack_delta": null
                 }
             ],
-            "0x0c": [
+            "0x0C": [
                 ["depth", "varuint32_t"],
                 {"stack_delta": null}
             ],
-            "0x0d": [
+            "0x0D": [
                 ["depth", "varuint32_t"],
                 {"stack_delta": null}
             ],
-            "0x0e": [
+            "0x0E": [
                 ["table", "[varuint32_t]"],
                 ["default", "varuint32_t"],
                 {"stack_delta": null}
             ],
-            "0x0f": [
+            "0x0F": [
                 {"stack_delta": null}
             ],
             "0x10": [
@@ -625,17 +629,17 @@
                 ["callee", "varuint32_t"],
                 {"stack_delta": null}
             ],
+            "0x1A": [
+                {"stack_delta": -1}
+            ],
+            "0x1B": [
+                {"stack_delta": -2}
+            ],
             "0x1C": [
                 [
                     "valtypes",
                     ["value_type_t"]
                 ],
-                {"stack_delta": -2}
-            ],
-            "0x1a": [
-                {"stack_delta": -1}
-            ],
-            "0x1b": [
                 {"stack_delta": -2}
             ],
             "0x20": [
@@ -664,12 +668,12 @@
             ],
             "0x28": [["flags", "memflags_t"], ["offset", "varuptr_t"]],
             "0x29": [["flags", "memflags_t"], ["offset", "varuptr_t"]],
-            "0x2a": [["flags", "memflags_t"], ["offset", "varuptr_t"]],
-            "0x2b": [["flags", "memflags_t"], ["offset", "varuptr_t"]],
-            "0x2c": [["flags", "memflags_t"], ["offset", "varuptr_t"]],
-            "0x2d": [["flags", "memflags_t"], ["offset", "varuptr_t"]],
-            "0x2e": [["flags", "memflags_t"], ["offset", "varuptr_t"]],
-            "0x2f": [["flags", "memflags_t"], ["offset", "varuptr_t"]],
+            "0x2A": [["flags", "memflags_t"], ["offset", "varuptr_t"]],
+            "0x2B": [["flags", "memflags_t"], ["offset", "varuptr_t"]],
+            "0x2C": [["flags", "memflags_t"], ["offset", "varuptr_t"]],
+            "0x2D": [["flags", "memflags_t"], ["offset", "varuptr_t"]],
+            "0x2E": [["flags", "memflags_t"], ["offset", "varuptr_t"]],
+            "0x2F": [["flags", "memflags_t"], ["offset", "varuptr_t"]],
             "0x30": [["flags", "memflags_t"], ["offset", "varuptr_t"]],
             "0x31": [["flags", "memflags_t"], ["offset", "varuptr_t"]],
             "0x32": [["flags", "memflags_t"], ["offset", "varuptr_t"]],
@@ -696,32 +700,32 @@
                 ["offset", "varuptr_t"],
                 {"stack_delta": -2}
             ],
-            "0x3a": [
+            "0x3A": [
                 ["flags", "memflags_t"],
                 ["offset", "varuptr_t"],
                 {"stack_delta": -2}
             ],
-            "0x3b": [
+            "0x3B": [
                 ["flags", "memflags_t"],
                 ["offset", "varuptr_t"],
                 {"stack_delta": -2}
             ],
-            "0x3c": [
+            "0x3C": [
                 ["flags", "memflags_t"],
                 ["offset", "varuptr_t"],
                 {"stack_delta": -2}
             ],
-            "0x3d": [
+            "0x3D": [
                 ["flags", "memflags_t"],
                 ["offset", "varuptr_t"],
                 {"stack_delta": -2}
             ],
-            "0x3e": [
+            "0x3E": [
                 ["flags", "memflags_t"],
                 ["offset", "varuptr_t"],
                 {"stack_delta": -2}
             ],
-            "0x3f": [
+            "0x3F": [
                 ["reserved", "varuint1_t"],
                 {"stack_delta": 1}
             ],
@@ -755,22 +759,22 @@
             "0x49": [
                 {"stack_delta": -1}
             ],
-            "0x4a": [
+            "0x4A": [
                 {"stack_delta": -1}
             ],
-            "0x4b": [
+            "0x4B": [
                 {"stack_delta": -1}
             ],
-            "0x4c": [
+            "0x4C": [
                 {"stack_delta": -1}
             ],
-            "0x4d": [
+            "0x4D": [
                 {"stack_delta": -1}
             ],
-            "0x4e": [
+            "0x4E": [
                 {"stack_delta": -1}
             ],
-            "0x4f": [
+            "0x4F": [
                 {"stack_delta": -1}
             ],
             "0x50": [],
@@ -801,22 +805,22 @@
             "0x59": [
                 {"stack_delta": -1}
             ],
-            "0x5a": [
+            "0x5A": [
                 {"stack_delta": -1}
             ],
-            "0x5b": [
+            "0x5B": [
                 {"stack_delta": -1}
             ],
-            "0x5c": [
+            "0x5C": [
                 {"stack_delta": -1}
             ],
-            "0x5d": [
+            "0x5D": [
                 {"stack_delta": -1}
             ],
-            "0x5e": [
+            "0x5E": [
                 {"stack_delta": -1}
             ],
-            "0x5f": [
+            "0x5F": [
                 {"stack_delta": -1}
             ],
             "0x60": [
@@ -843,22 +847,22 @@
             "0x67": [],
             "0x68": [],
             "0x69": [],
-            "0x6a": [
+            "0x6A": [
                 {"stack_delta": -1}
             ],
-            "0x6b": [
+            "0x6B": [
                 {"stack_delta": -1}
             ],
-            "0x6c": [
+            "0x6C": [
                 {"stack_delta": -1}
             ],
-            "0x6d": [
+            "0x6D": [
                 {"stack_delta": -1}
             ],
-            "0x6e": [
+            "0x6E": [
                 {"stack_delta": -1}
             ],
-            "0x6f": [
+            "0x6F": [
                 {"stack_delta": -1}
             ],
             "0x70": [
@@ -889,18 +893,18 @@
                 {"stack_delta": -1}
             ],
             "0x79": [],
-            "0x7a": [],
-            "0x7b": [],
-            "0x7c": [
+            "0x7A": [],
+            "0x7B": [],
+            "0x7C": [
                 {"stack_delta": -1}
             ],
-            "0x7d": [
+            "0x7D": [
                 {"stack_delta": -1}
             ],
-            "0x7e": [
+            "0x7E": [
                 {"stack_delta": -1}
             ],
-            "0x7f": [
+            "0x7F": [
                 {"stack_delta": -1}
             ],
             "0x80": [
@@ -933,14 +937,14 @@
             "0x89": [
                 {"stack_delta": -1}
             ],
-            "0x8a": [
+            "0x8A": [
                 {"stack_delta": -1}
             ],
-            "0x8b": [],
-            "0x8c": [],
-            "0x8d": [],
-            "0x8e": [],
-            "0x8f": [],
+            "0x8B": [],
+            "0x8C": [],
+            "0x8D": [],
+            "0x8E": [],
+            "0x8F": [],
             "0x90": [],
             "0x91": [],
             "0x92": [
@@ -965,12 +969,63 @@
                 {"stack_delta": -1}
             ],
             "0x99": [],
-            "0x9a": [],
-            "0x9b": [],
-            "0x9c": [],
-            "0x9d": [],
-            "0x9e": [],
-            "0x9f": [],
+            "0x9A": [],
+            "0x9B": [],
+            "0x9C": [],
+            "0x9D": [],
+            "0x9E": [],
+            "0x9F": [],
+            "0xA0": [
+                {"stack_delta": -1}
+            ],
+            "0xA1": [
+                {"stack_delta": -1}
+            ],
+            "0xA2": [
+                {"stack_delta": -1}
+            ],
+            "0xA3": [
+                {"stack_delta": -1}
+            ],
+            "0xA4": [
+                {"stack_delta": -1}
+            ],
+            "0xA5": [
+                {"stack_delta": -1}
+            ],
+            "0xA6": [
+                {"stack_delta": -1}
+            ],
+            "0xA7": [],
+            "0xA8": [],
+            "0xA9": [],
+            "0xAA": [],
+            "0xAB": [],
+            "0xAC": [],
+            "0xAD": [],
+            "0xAE": [],
+            "0xAF": [],
+            "0xB0": [],
+            "0xB1": [],
+            "0xB2": [],
+            "0xB3": [],
+            "0xB4": [],
+            "0xB5": [],
+            "0xB6": [],
+            "0xB7": [],
+            "0xB8": [],
+            "0xB9": [],
+            "0xBA": [],
+            "0xBB": [],
+            "0xBC": [],
+            "0xBD": [],
+            "0xBE": [],
+            "0xBF": [],
+            "0xC0": [],
+            "0xC1": [],
+            "0xC2": [],
+            "0xC3": [],
+            "0xC4": [],
             "0xD0": [
                 ["reftype", "reference_type_t"],
                 {"stack_delta": 1}
@@ -1032,57 +1087,633 @@
                     {"stack_delta": -3}
                 ]
             },
-            "0xa0": [
-                {"stack_delta": -1}
-            ],
-            "0xa1": [
-                {"stack_delta": -1}
-            ],
-            "0xa2": [
-                {"stack_delta": -1}
-            ],
-            "0xa3": [
-                {"stack_delta": -1}
-            ],
-            "0xa4": [
-                {"stack_delta": -1}
-            ],
-            "0xa5": [
-                {"stack_delta": -1}
-            ],
-            "0xa6": [
-                {"stack_delta": -1}
-            ],
-            "0xa7": [],
-            "0xa8": [],
-            "0xa9": [],
-            "0xaa": [],
-            "0xab": [],
-            "0xac": [],
-            "0xad": [],
-            "0xae": [],
-            "0xaf": [],
-            "0xb0": [],
-            "0xb1": [],
-            "0xb2": [],
-            "0xb3": [],
-            "0xb4": [],
-            "0xb5": [],
-            "0xb6": [],
-            "0xb7": [],
-            "0xb8": [],
-            "0xb9": [],
-            "0xba": [],
-            "0xbb": [],
-            "0xbc": [],
-            "0xbd": [],
-            "0xbe": [],
-            "0xbf": [],
-            "0xc0": [],
-            "0xc1": [],
-            "0xc2": [],
-            "0xc3": [],
-            "0xc4": []
+            "0xFD": {
+                "00": [
+                    ["flags", "memflags_t"],
+                    ["offset", "varuptr_t"]
+                ],
+                "01": [
+                    ["flags", "memflags_t"],
+                    ["offset", "varuptr_t"]
+                ],
+                "02": [
+                    ["flags", "memflags_t"],
+                    ["offset", "varuptr_t"]
+                ],
+                "03": [
+                    ["flags", "memflags_t"],
+                    ["offset", "varuptr_t"]
+                ],
+                "04": [
+                    ["flags", "memflags_t"],
+                    ["offset", "varuptr_t"]
+                ],
+                "05": [
+                    ["flags", "memflags_t"],
+                    ["offset", "varuptr_t"]
+                ],
+                "06": [
+                    ["flags", "memflags_t"],
+                    ["offset", "varuptr_t"]
+                ],
+                "07": [
+                    ["flags", "memflags_t"],
+                    ["offset", "varuptr_t"]
+                ],
+                "08": [
+                    ["flags", "memflags_t"],
+                    ["offset", "varuptr_t"]
+                ],
+                "09": [
+                    ["flags", "memflags_t"],
+                    ["offset", "varuptr_t"]
+                ],
+                "10": [
+                    ["flags", "memflags_t"],
+                    ["offset", "varuptr_t"]
+                ],
+                "11": [
+                    ["flags", "memflags_t"],
+                    ["offset", "varuptr_t"],
+                    {"stack_delta": -2}
+                ],
+                "12": [
+                    ["value", "v128_t"],
+                    {"stack_delta": 1}
+                ],
+                "13": [
+                    ["value", "v128_t"],
+                    {"stack_delta": -1}
+                ],
+                "14": [
+                    {"stack_delta": -1}
+                ],
+                "15": [],
+                "16": [],
+                "17": [],
+                "18": [],
+                "19": [],
+                "20": [],
+                "21": [
+                    ["laneidx", "byte_t"]
+                ],
+                "22": [
+                    ["laneidx", "byte_t"]
+                ],
+                "23": [
+                    ["laneidx", "byte_t"],
+                    {"stack_delta": -1}
+                ],
+                "24": [
+                    ["laneidx", "byte_t"]
+                ],
+                "25": [
+                    ["laneidx", "byte_t"]
+                ],
+                "26": [
+                    ["laneidx", "byte_t"],
+                    {"stack_delta": -1}
+                ],
+                "27": [
+                    ["laneidx", "byte_t"]
+                ],
+                "28": [
+                    ["laneidx", "byte_t"],
+                    {"stack_delta": -1}
+                ],
+                "29": [
+                    ["laneidx", "byte_t"]
+                ],
+                "30": [
+                    ["laneidx", "byte_t"],
+                    {"stack_delta": -1}
+                ],
+                "31": [
+                    ["laneidx", "byte_t"]
+                ],
+                "32": [
+                    ["laneidx", "byte_t"],
+                    {"stack_delta": -1}
+                ],
+                "33": [
+                    ["laneidx", "byte_t"]
+                ],
+                "34": [
+                    ["laneidx", "byte_t"],
+                    {"stack_delta": -1}
+                ],
+                "35": [
+                    {"stack_delta": -1}
+                ],
+                "36": [
+                    {"stack_delta": -1}
+                ],
+                "37": [
+                    {"stack_delta": -1}
+                ],
+                "38": [
+                    {"stack_delta": -1}
+                ],
+                "39": [
+                    {"stack_delta": -1}
+                ],
+                "40": [
+                    {"stack_delta": -1}
+                ],
+                "41": [
+                    {"stack_delta": -1}
+                ],
+                "42": [
+                    {"stack_delta": -1}
+                ],
+                "43": [
+                    {"stack_delta": -1}
+                ],
+                "44": [
+                    {"stack_delta": -1}
+                ],
+                "45": [
+                    {"stack_delta": -1}
+                ],
+                "46": [
+                    {"stack_delta": -1}
+                ],
+                "47": [
+                    {"stack_delta": -1}
+                ],
+                "48": [
+                    {"stack_delta": -1}
+                ],
+                "49": [
+                    {"stack_delta": -1}
+                ],
+                "50": [
+                    {"stack_delta": -1}
+                ],
+                "51": [
+                    {"stack_delta": -1}
+                ],
+                "52": [
+                    {"stack_delta": -1}
+                ],
+                "53": [
+                    {"stack_delta": -1}
+                ],
+                "54": [
+                    {"stack_delta": -1}
+                ],
+                "55": [
+                    {"stack_delta": -1}
+                ],
+                "56": [
+                    {"stack_delta": -1}
+                ],
+                "57": [
+                    {"stack_delta": -1}
+                ],
+                "58": [
+                    {"stack_delta": -1}
+                ],
+                "59": [
+                    {"stack_delta": -1}
+                ],
+                "60": [
+                    {"stack_delta": -1}
+                ],
+                "61": [
+                    {"stack_delta": -1}
+                ],
+                "62": [
+                    {"stack_delta": -1}
+                ],
+                "63": [
+                    {"stack_delta": -1}
+                ],
+                "64": [
+                    {"stack_delta": -1}
+                ],
+                "65": [
+                    {"stack_delta": -1}
+                ],
+                "66": [
+                    {"stack_delta": -1}
+                ],
+                "67": [
+                    {"stack_delta": -1}
+                ],
+                "68": [
+                    {"stack_delta": -1}
+                ],
+                "69": [
+                    {"stack_delta": -1}
+                ],
+                "70": [
+                    {"stack_delta": -1}
+                ],
+                "71": [
+                    {"stack_delta": -1}
+                ],
+                "72": [
+                    {"stack_delta": -1}
+                ],
+                "73": [
+                    {"stack_delta": -1}
+                ],
+                "74": [
+                    {"stack_delta": -1}
+                ],
+                "75": [
+                    {"stack_delta": -1}
+                ],
+                "76": [
+                    {"stack_delta": -1}
+                ],
+                "77": [],
+                "78": [
+                    {"stack_delta": -1}
+                ],
+                "79": [
+                    {"stack_delta": -1}
+                ],
+                "80": [
+                    {"stack_delta": -1}
+                ],
+                "81": [
+                    {"stack_delta": -1}
+                ],
+                "82": [
+                    {"stack_delta": -2}
+                ],
+                "83": [],
+                "84": [
+                    ["flags", "memflags_t"],
+                    ["offset", "varuptr_t"],
+                    ["laneidx", "byte_t"],
+                    {"stack_delta": -1}
+                ],
+                "85": [
+                    ["flags", "memflags_t"],
+                    ["offset", "varuptr_t"],
+                    ["laneidx", "byte_t"],
+                    {"stack_delta": -1}
+                ],
+                "86": [
+                    ["flags", "memflags_t"],
+                    ["offset", "varuptr_t"],
+                    ["laneidx", "byte_t"],
+                    {"stack_delta": -1}
+                ],
+                "87": [
+                    ["flags", "memflags_t"],
+                    ["offset", "varuptr_t"],
+                    ["laneidx", "byte_t"],
+                    {"stack_delta": -1}
+                ],
+                "88": [
+                    ["flags", "memflags_t"],
+                    ["offset", "varuptr_t"],
+                    ["laneidx", "byte_t"],
+                    {"stack_delta": -2}
+                ],
+                "89": [
+                    ["flags", "memflags_t"],
+                    ["offset", "varuptr_t"],
+                    ["laneidx", "byte_t"],
+                    {"stack_delta": -2}
+                ],
+                "90": [
+                    ["flags", "memflags_t"],
+                    ["offset", "varuptr_t"],
+                    ["laneidx", "byte_t"],
+                    {"stack_delta": -2}
+                ],
+                "91": [
+                    ["flags", "memflags_t"],
+                    ["offset", "varuptr_t"],
+                    ["laneidx", "byte_t"],
+                    {"stack_delta": -2}
+                ],
+                "92": [
+                    ["flags", "memflags_t"],
+                    ["offset", "varuptr_t"]
+                ],
+                "93": [
+                    ["flags", "memflags_t"],
+                    ["offset", "varuptr_t"]
+                ],
+                "94": [],
+                "95": [],
+                "96": [],
+                "97": [],
+                "98": [],
+                "99": [],
+                "100": [],
+                "101": [
+                    {"stack_delta": -1}
+                ],
+                "102": [
+                    {"stack_delta": -1}
+                ],
+                "103": [],
+                "104": [],
+                "105": [],
+                "106": [],
+                "107": [
+                    {"stack_delta": -1}
+                ],
+                "108": [
+                    {"stack_delta": -1}
+                ],
+                "109": [
+                    {"stack_delta": -1}
+                ],
+                "110": [
+                    {"stack_delta": -1}
+                ],
+                "111": [
+                    {"stack_delta": -1}
+                ],
+                "112": [
+                    {"stack_delta": -1}
+                ],
+                "113": [
+                    {"stack_delta": -1}
+                ],
+                "114": [
+                    {"stack_delta": -1}
+                ],
+                "115": [
+                    {"stack_delta": -1}
+                ],
+                "116": [],
+                "117": [],
+                "118": [
+                    {"stack_delta": -1}
+                ],
+                "119": [
+                    {"stack_delta": -1}
+                ],
+                "120": [
+                    {"stack_delta": -1}
+                ],
+                "121": [
+                    {"stack_delta": -1}
+                ],
+                "122": [],
+                "123": [
+                    {"stack_delta": -1}
+                ],
+                "124": [],
+                "125": [],
+                "126": [],
+                "127": [],
+                "128": [],
+                "129": [],
+                "130": [
+                    {"stack_delta": -1}
+                ],
+                "131": [],
+                "132": [],
+                "133": [
+                    {"stack_delta": -1}
+                ],
+                "134": [
+                    {"stack_delta": -1}
+                ],
+                "135": [],
+                "136": [],
+                "137": [],
+                "138": [],
+                "139": [
+                    {"stack_delta": -1}
+                ],
+                "140": [
+                    {"stack_delta": -1}
+                ],
+                "141": [
+                    {"stack_delta": -1}
+                ],
+                "142": [
+                    {"stack_delta": -1}
+                ],
+                "143": [
+                    {"stack_delta": -1}
+                ],
+                "144": [
+                    {"stack_delta": -1}
+                ],
+                "145": [
+                    {"stack_delta": -1}
+                ],
+                "146": [
+                    {"stack_delta": -1}
+                ],
+                "147": [
+                    {"stack_delta": -1}
+                ],
+                "148": [],
+                "149": [
+                    {"stack_delta": -1}
+                ],
+                "150": [
+                    {"stack_delta": -1}
+                ],
+                "151": [
+                    {"stack_delta": -1}
+                ],
+                "152": [
+                    {"stack_delta": -1}
+                ],
+                "153": [
+                    {"stack_delta": -1}
+                ],
+                "155": [
+                    {"stack_delta": -1}
+                ],
+                "156": [
+                    {"stack_delta": -1}
+                ],
+                "157": [
+                    {"stack_delta": -1}
+                ],
+                "158": [
+                    {"stack_delta": -1}
+                ],
+                "159": [
+                    {"stack_delta": -1}
+                ],
+                "160": [],
+                "161": [],
+                "163": [],
+                "164": [],
+                "167": [],
+                "168": [],
+                "169": [],
+                "170": [],
+                "171": [
+                    {"stack_delta": -1}
+                ],
+                "172": [
+                    {"stack_delta": -1}
+                ],
+                "173": [
+                    {"stack_delta": -1}
+                ],
+                "174": [
+                    {"stack_delta": -1}
+                ],
+                "177": [
+                    {"stack_delta": -1}
+                ],
+                "181": [
+                    {"stack_delta": -1}
+                ],
+                "182": [
+                    {"stack_delta": -1}
+                ],
+                "183": [
+                    {"stack_delta": -1}
+                ],
+                "184": [
+                    {"stack_delta": -1}
+                ],
+                "185": [
+                    {"stack_delta": -1}
+                ],
+                "186": [
+                    {"stack_delta": -1}
+                ],
+                "188": [
+                    {"stack_delta": -1}
+                ],
+                "189": [
+                    {"stack_delta": -1}
+                ],
+                "190": [
+                    {"stack_delta": -1}
+                ],
+                "191": [
+                    {"stack_delta": -1}
+                ],
+                "192": [],
+                "193": [],
+                "195": [],
+                "196": [],
+                "199": [],
+                "200": [],
+                "201": [],
+                "202": [],
+                "203": [
+                    {"stack_delta": -1}
+                ],
+                "204": [
+                    {"stack_delta": -1}
+                ],
+                "205": [
+                    {"stack_delta": -1}
+                ],
+                "206": [
+                    {"stack_delta": -1}
+                ],
+                "209": [
+                    {"stack_delta": -1}
+                ],
+                "213": [
+                    {"stack_delta": -1}
+                ],
+                "214": [
+                    {"stack_delta": -1}
+                ],
+                "215": [
+                    {"stack_delta": -1}
+                ],
+                "216": [
+                    {"stack_delta": -1}
+                ],
+                "217": [
+                    {"stack_delta": -1}
+                ],
+                "218": [
+                    {"stack_delta": -1}
+                ],
+                "219": [
+                    {"stack_delta": -1}
+                ],
+                "220": [
+                    {"stack_delta": -1}
+                ],
+                "221": [
+                    {"stack_delta": -1}
+                ],
+                "222": [
+                    {"stack_delta": -1}
+                ],
+                "223": [
+                    {"stack_delta": -1}
+                ],
+                "224": [],
+                "225": [],
+                "227": [],
+                "228": [
+                    {"stack_delta": -1}
+                ],
+                "229": [
+                    {"stack_delta": -1}
+                ],
+                "230": [
+                    {"stack_delta": -1}
+                ],
+                "231": [
+                    {"stack_delta": -1}
+                ],
+                "232": [
+                    {"stack_delta": -1}
+                ],
+                "233": [
+                    {"stack_delta": -1}
+                ],
+                "234": [
+                    {"stack_delta": -1}
+                ],
+                "235": [
+                    {"stack_delta": -1}
+                ],
+                "236": [],
+                "237": [],
+                "239": [],
+                "240": [
+                    {"stack_delta": -1}
+                ],
+                "241": [
+                    {"stack_delta": -1}
+                ],
+                "242": [
+                    {"stack_delta": -1}
+                ],
+                "243": [
+                    {"stack_delta": -1}
+                ],
+                "244": [
+                    {"stack_delta": -1}
+                ],
+                "245": [
+                    {"stack_delta": -1}
+                ],
+                "246": [
+                    {"stack_delta": -1}
+                ],
+                "247": [
+                    {"stack_delta": -1}
+                ],
+                "248": [],
+                "249": [],
+                "250": [],
+                "251": [],
+                "252": [],
+                "253": [],
+                "254": [],
+                "255": []
+            }
         }
     },
     "SectionTypes": {

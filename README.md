@@ -1,6 +1,6 @@
 ## Winter is a relatively fast in-place interpreter for WebAssembly
 
-Designed as a target for compiler testing it performs enough validation to pass the [WebAssembly Spec Core Tests][core] but not to run untrusted modules. The core interpreter loop is kept as simple as possible by reading the bytecode directly without the need for an intermediate representation. A small amount of auxillary information is created during a partial validation step on a per-function just-in-time basis (similar in nature to [A fast in-place interpreter for WebAssembly](https://arxiv.org/abs/2205.01183)). Many validation checks are skipped to keep the implementation small and meet the use case of a flexible development target. All non-SIMD test cases pass with the built-in tester.
+Designed as a target for compiler testing it performs enough validation to pass the [WebAssembly Spec Core Tests][core] but not to run untrusted modules. The core interpreter loop is kept as simple as possible by reading the bytecode directly without the need for an intermediate representation. A small amount of auxillary information is created during a partial validation step on a per-function just-in-time basis (similar in nature to [A fast in-place interpreter for WebAssembly](https://arxiv.org/abs/2205.01183)). Many validation checks are skipped to keep the implementation small and meet the use case of a flexible development target. All core (including SIMD) test cases pass with the built-in tester.
 
 
  *  **Winter is relatively simple.**

@@ -1,3 +1,4 @@
+*.md
 *.wasm
+
 __pycache__/
-*.pyc

@@ -18,6 +18,12 @@ class Float:
         def with_type(self, typ):
             raise NotImplementedError
 
+        def __float__(self):
+            raise NotImplementedError
+
+        def __str__(self):
+            raise NotImplementedError
+
     @classmethod
     def parse(Self, s):
         if s[0] in ('+', '-'):
@@ -48,8 +54,7 @@ class Float:
         elif math.isinf(f):
             return (F32Infinity if typ == 'f32' else F64Infinity)('+' if f > 0 else '-')
         elif math.isnan(f):
-            byts = struct.pack('>f' if typ == 'f32' else '>d', f)
-            return (F32NaN if typ == 'f32' else F64NaN)(int.from_bytes(byts, byteorder='big'))
+            return Float.frombytes(struct.pack('>f' if typ == 'f32' else '>d', f))
         else:
             assert False
 
@@ -102,7 +107,14 @@ class InfinityClass:
     pass
 
 class NaNClass:
-    pass
+    def is_canonical(self):
+        raise NotImplementedError
+
+    def is_arithmetic(self):
+        raise NotImplementedError
+
+    def equiv(self, nan):
+        raise TypeError(f"{type(self).__name__} equiv {type(nan).__name__}")
 
 
 """ Literals """
@@ -153,13 +165,29 @@ class NaNWithPayload(Float.Literal, NaNClass):
     def __init__(self, sign, payload):
         self.sign = sign
         self.payload = payload
+        assert int(payload, 16) != 0
 
     def with_type(self, typ):
         assert typ == 'f64' or len(self.payload) <= 8
 
         cls = (F32NaN if typ == 'f32' else F64NaN)
 
+        assert int(self.payload, 16) & cls.NANS[0] == 0
+        assert int(self.payload, 16) & cls.NANS[1] == 0
+
         return cls(cls.NANS[0 if self.sign == '+' else 1] | int(self.payload, 16))
+
+    def is_canonical(self):
+        return int(self.payload, 16) == 0
+
+    def is_arithmetic(self):
+        return int(self.payload, 16) >= 0
+
+    def equiv(self, nan):
+        if isinstance(nan, (F32NaN, F64NaN)):
+            return self.is_canonical() == nan.is_canonical()
+
+        return super().equiv(nan)
 
     def __str__(self):
         return str(self.with_type('f32' if len(self.payload) <= 8 else 'f64'))
@@ -172,6 +200,18 @@ class CanonicalNaN(Float.Literal, NaNClass):
     def with_type(self, typ):
         return (F32NaN if typ == 'f32' else F64NaN).CANONS[0 if self.sign == '+' else 1]
 
+    def is_canonical(self):
+        return True
+
+    def is_arithmetic(self):
+        return True
+
+    def equiv(self, nan):
+        if isinstance(nan, (F32NaN, F64NaN)):
+            return nan.is_canonical()
+
+        return super().equiv(nan)
+
     def __str__(self):
         return f"{self.sign if self.sign == '-' else ''}nan"
 
@@ -182,6 +222,18 @@ class ArithmeticNaN(Float.Literal, NaNClass):
 
     def with_type(self, typ):
         return (F32NaN if typ == 'f32' else F64NaN).ARITHMETICS[0 if self.sign == '+' else 1]
+
+    def is_canonical(self):
+        return False
+
+    def is_arithmetic(self):
+        return True
+
+    def equiv(self, nan):
+        if isinstance(nan, (F32NaN, F64NaN)):
+            return nan.is_arithmetic()
+
+        return super().equiv(nan)
 
     def __str__(self):
         return "nan:arithmetic"
@@ -225,7 +277,7 @@ class F32NaN(Float, NaNClass):
     SIGNIF = 23
     EXP    = 8
     NANS = [ones(EXP) << SIGNIF, ones(1 + EXP) << SIGNIF] # 0x7f800000         0xff800000
-    CANON_PL = _2__(SIGNIF - 1)                              # 0x00400000
+    CANON_PL = _2__(SIGNIF - 1)                           # 0x00400000
     ARITH_PL = CANON_PL + 5
 
     def __init__(self, bits):
@@ -233,6 +285,9 @@ class F32NaN(Float, NaNClass):
 
     def is_canonical(self):
         return self in self.CANONS
+
+    def is_arithmetic(self):
+        return self.bits & self.NANS[0] == self.NANS[0]
 
     def __str__(self):
         return f"{super().__str__()}:0x{self.byts.hex()}"
@@ -246,7 +301,7 @@ class F64NaN(Float, NaNClass):
     SIGNIF = 52
     EXP    = 11
     NANS = [ones(EXP) << SIGNIF, ones(1 + EXP) << SIGNIF] # 0x7ff0000000000000 0xfff0000000000000
-    CANON_PL = _2__(SIGNIF - 1)                              # 0x0008000000000000
+    CANON_PL = _2__(SIGNIF - 1)                           # 0x0008000000000000
     ARITH_PL = CANON_PL + 5
 
     def __init__(self, bits):
@@ -254,6 +309,9 @@ class F64NaN(Float, NaNClass):
 
     def is_canonical(self):
         return self in self.CANONS
+
+    def is_arithmetic(self):
+        return self.bits & self.NANS[0] == self.NANS[0]
 
     def __str__(self):
         return f"{super().__str__()}:0x{self.byts.hex()}"
@@ -276,6 +334,18 @@ assert str(Float.parse('nan:0x0034')) == 'nan:0x7f800034'
 assert str(Float.parse('nan:0x0000000034')) == 'nan:0x7ff0000000000034'
 assert str(Float.parse('-nan:0x0034')) == 'nan:0xff800034'
 assert str(Float.parse('-nan:0x0000000034')) == 'nan:0xfff0000000000034'
+
+assert Float.parse('nan').with_type('f32').bits                 == 0x7fc00000           #ML interpreter pos_nan is canonical nan
+assert Float.parse('nan:0x400000').with_type('f32').bits        == 0x7fc00000           #ML interpreter bare_nan (0x7f800000 | 0x400000) (plain_nan in tests)
+assert Float.parse('nan:0x200000').with_type('f32').bits        == 0x7fa00000           #ML interpreter bare_nan (0x7f800000 | 0x200000)
+assert Float.parse('nan').equiv(Float.parse('nan:0x400000').with_type('f32'))
+assert not Float.parse('nan').equiv(Float.parse('nan:0x200000').with_type('f32'))
+
+assert Float.parse('nan').with_type('f64').bits                 == 0x7ff8000000000000   #ML interpreter pos_nan is canonical nan
+assert Float.parse('nan:0x8000000000000').with_type('f64').bits == 0x7ff8000000000000   #ML interpreter bare_nan (0x7ff0000000000000 | 0x8000000000000) (plain_nan in tests)
+assert Float.parse('nan:0x4000000000000').with_type('f64').bits == 0x7ff4000000000000   #ML interpreter bare_nan (0x7ff0000000000000 | 0x4000000000000)
+assert Float.parse('nan').equiv(Float.parse('nan:0x8000000000000').with_type('f64'))
+assert not Float.parse('nan').equiv(Float.parse('nan:0x4000000000000').with_type('f64'))
 
 assert isinstance(Float.parse('nan:0x2000000034'), NaNWithPayload)
 assert isinstance(Float.parse('nan:0x2000000034').with_type('f64'), F64NaN)
